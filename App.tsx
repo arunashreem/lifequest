@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Layout from './components/AppLayout';
+import Layout from './components/Layout';
 import CharacterStats from './components/CharacterStats';
 import QuestCard from './components/QuestCard';
 import AdventurerCalendar from './components/AdventurerCalendar';
