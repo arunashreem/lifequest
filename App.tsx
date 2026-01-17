@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Layout from './components/Layout';
+import Layout from './components/AppLayout';
 import CharacterStats from './components/CharacterStats';
 import QuestCard from './components/QuestCard';
 import AdventurerCalendar from './components/AdventurerCalendar';
@@ -173,7 +173,7 @@ const Confetti = () => {
         const left = Math.random() * 100;
         const rotationStart = Math.random() * 360;
         const swingX = (Math.random() - 0.5) * 60;
-        
+
         return (
           <div
             key={i}
@@ -222,7 +222,7 @@ const App: React.FC = () => {
   const [isCreatingCountdown, setIsCreatingCountdown] = useState(false);
   const [newCountdownTitle, setNewCountdownTitle] = useState('');
   const [newCountdownDate, setNewCountdownDate] = useState('');
-  
+
   // XP Award States
   const [awardPopup, setAwardPopup] = useState<{ xp: number, message: string } | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -267,13 +267,13 @@ const App: React.FC = () => {
         else if ([TaskCategory.SOCIAL, TaskCategory.CHORES].includes(category)) newAttributes.charisma += 1;
       }
 
-      return { 
-        ...s, 
-        xp: newXp, 
-        level: newLevel, 
-        maxXp: newMaxXp, 
-        gold: s.gold + Math.floor(xp/2),
-        attributes: newAttributes 
+      return {
+        ...s,
+        xp: newXp,
+        level: newLevel,
+        maxXp: newMaxXp,
+        gold: s.gold + Math.floor(xp / 2),
+        attributes: newAttributes
       };
     });
     setAwardPopup({ xp, message });
@@ -516,71 +516,71 @@ const App: React.FC = () => {
             <CharacterStats stats={stats} />
             <div className="space-y-4">
               <SideQuestList tasks={tasks} onComplete={handleCompleteTask} />
-              
+
               {/* Create Countdown Button Section - RPG Format */}
               <div className="rpg-card rounded-[2.5rem] p-8 border-blue-500/20 bg-slate-900/40 relative group overflow-hidden shadow-2xl">
-                 {!isCreatingCountdown ? (
-                   <div className="flex flex-col gap-5 items-center text-center relative z-10">
-                     <div className="p-4 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg border border-white/10 group-hover:scale-110 group-hover:rotate-3 transition-transform">
-                       <Timer className="text-white" size={32} />
-                     </div>
-                     <div className="space-y-1">
-                       <h3 className="text-lg font-black text-white uppercase tracking-tight">Temporal Marker</h3>
-                       <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest opacity-80">Chronos Sync Required</p>
-                     </div>
-                     <button 
+                {!isCreatingCountdown ? (
+                  <div className="flex flex-col gap-5 items-center text-center relative z-10">
+                    <div className="p-4 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg border border-white/10 group-hover:scale-110 group-hover:rotate-3 transition-transform">
+                      <Timer className="text-white" size={32} />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-lg font-black text-white uppercase tracking-tight">Temporal Marker</h3>
+                      <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest opacity-80">Chronos Sync Required</p>
+                    </div>
+                    <button
                       onClick={() => setIsCreatingCountdown(true)}
                       className="w-full flex items-center justify-center gap-3 py-4 bg-blue-600 hover:bg-blue-500 border border-blue-400/30 rounded-xl text-[10px] font-black text-white uppercase tracking-[0.2em] shadow-lg shadow-blue-900/40 transition-all active:scale-95"
-                     >
-                       Initiate Marker
-                     </button>
-                   </div>
-                 ) : (
-                   <form onSubmit={handleCreateCountdown} className="space-y-5 animate-in slide-in-from-top-4 duration-300 relative z-10">
-                      <div className="flex items-center gap-3 mb-2">
-                         <Sparkles size={16} className="text-blue-400 animate-pulse" />
-                         <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest italic">What is the countdown for?</p>
+                    >
+                      Initiate Marker
+                    </button>
+                  </div>
+                ) : (
+                  <form onSubmit={handleCreateCountdown} className="space-y-5 animate-in slide-in-from-top-4 duration-300 relative z-10">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Sparkles size={16} className="text-blue-400 animate-pulse" />
+                      <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest italic">What is the countdown for?</p>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="Quest Title (e.g. Boss Battle)"
+                          value={newCountdownTitle}
+                          onChange={e => setNewCountdownTitle(e.target.value)}
+                          className="w-full bg-slate-950/80 border-2 border-slate-800 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
+                          autoFocus
+                        />
                       </div>
-                      <div className="space-y-3">
-                        <div className="relative">
-                          <input 
-                            type="text" 
-                            placeholder="Quest Title (e.g. Boss Battle)"
-                            value={newCountdownTitle}
-                            onChange={e => setNewCountdownTitle(e.target.value)}
-                            className="w-full bg-slate-950/80 border-2 border-slate-800 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-all placeholder:text-slate-700"
-                            autoFocus
-                          />
-                        </div>
-                        <div className="relative">
-                          <input 
-                            type="date" 
-                            value={newCountdownDate}
-                            onChange={e => setNewCountdownDate(e.target.value)}
-                            className="w-full bg-slate-950/80 border-2 border-slate-800 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-all"
-                          />
-                        </div>
+                      <div className="relative">
+                        <input
+                          type="date"
+                          value={newCountdownDate}
+                          onChange={e => setNewCountdownDate(e.target.value)}
+                          className="w-full bg-slate-950/80 border-2 border-slate-800 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-blue-500 transition-all"
+                        />
                       </div>
-                      <div className="flex gap-3 pt-2">
-                        <button 
-                          type="button" 
-                          onClick={() => setIsCreatingCountdown(false)}
-                          className="flex-1 py-3.5 rounded-xl bg-slate-800 text-slate-500 text-[10px] font-black uppercase tracking-widest border border-white/5 hover:text-white transition-colors"
-                        >
-                          Abort
-                        </button>
-                        <button 
-                          type="submit"
-                          className="flex-[2] py-3.5 rounded-xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-900/40 border border-blue-400/30 hover:bg-blue-500 transition-all"
-                        >
-                          Forge Marker
-                        </button>
-                      </div>
-                   </form>
-                 )}
-                 {/* Background Glows */}
-                 <div className="absolute top-[-20%] right-[-20%] w-32 h-32 bg-blue-500/10 blur-3xl pointer-events-none" />
-                 <div className="absolute bottom-[-10%] left-[-10%] w-24 h-24 bg-indigo-500/5 blur-2xl pointer-events-none" />
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsCreatingCountdown(false)}
+                        className="flex-1 py-3.5 rounded-xl bg-slate-800 text-slate-500 text-[10px] font-black uppercase tracking-widest border border-white/5 hover:text-white transition-colors"
+                      >
+                        Abort
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-[2] py-3.5 rounded-xl bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-900/40 border border-blue-400/30 hover:bg-blue-500 transition-all"
+                      >
+                        Forge Marker
+                      </button>
+                    </div>
+                  </form>
+                )}
+                {/* Background Glows */}
+                <div className="absolute top-[-20%] right-[-20%] w-32 h-32 bg-blue-500/10 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-24 h-24 bg-indigo-500/5 blur-2xl pointer-events-none" />
               </div>
             </div>
           </div>
@@ -589,21 +589,21 @@ const App: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {showSiege && <CountdownWidget targetDate="2026-02-02" isStatic={true} />}
               {countdowns.map(cd => (
-                <CountdownWidget 
+                <CountdownWidget
                   key={cd.id}
-                  title={cd.title} 
-                  subtitle={cd.subtitle} 
-                  targetDate={cd.targetDate} 
+                  title={cd.title}
+                  subtitle={cd.subtitle}
+                  targetDate={cd.targetDate}
                   color={cd.color}
                   onDelete={() => handleDeleteCountdown(cd.id)}
                 />
               ))}
               <WeatherWidget />
             </div>
-            
+
             <div className="flex items-center justify-between mt-2">
               <h2 className="text-xl font-black text-white uppercase tracking-tighter">Active Raids</h2>
-              <button 
+              <button
                 onClick={handleAiQuestGeneration}
                 disabled={isGenerating}
                 className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-3 py-1.5 rounded-lg font-bold text-xs transition-all shadow-lg shadow-purple-900/20 disabled:opacity-50"
@@ -614,7 +614,7 @@ const App: React.FC = () => {
             </div>
 
             <form onSubmit={addTask} className="relative group">
-              <input 
+              <input
                 type="text"
                 value={newTaskTitle}
                 onChange={(e) => setNewTaskTitle(e.target.value)}
@@ -642,22 +642,22 @@ const App: React.FC = () => {
   return (
     <Layout activeTab={activeTab} setActiveTab={setActiveTab} gold={stats.gold}>
       {showConfetti && <Confetti />}
-      
+
       {awardPopup && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-500" />
           <div className="relative bg-slate-900 border-2 border-blue-500/50 p-10 rounded-[2.5rem] shadow-[0_0_80px_rgba(59,130,246,0.3)] text-center animate-in zoom-in-95 duration-500 overflow-hidden max-w-lg">
-             <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-blue-600 p-5 rounded-full shadow-[0_0_30px_rgba(59,130,246,0.6)] border-4 border-slate-900 animate-bounce">
-                <Medal size={40} className="text-white" />
-             </div>
-             <div className="mt-6 space-y-4">
-                <h4 className="text-4xl font-black text-white uppercase tracking-tighter">Oracle's Favor</h4>
-                <div className="bg-slate-950 p-6 rounded-2xl border border-white/5 shadow-inner">
-                  <p className="text-3xl font-black text-blue-400">+{awardPopup.xp} XP</p>
-                  <p className="text-lg font-black text-yellow-500/80">+{Math.floor(awardPopup.xp/2)} GOLD</p>
-                </div>
-                <p className="text-slate-300 font-bold italic text-lg leading-snug">"{awardPopup.message}"</p>
-             </div>
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-blue-600 p-5 rounded-full shadow-[0_0_30px_rgba(59,130,246,0.6)] border-4 border-slate-900 animate-bounce">
+              <Medal size={40} className="text-white" />
+            </div>
+            <div className="mt-6 space-y-4">
+              <h4 className="text-4xl font-black text-white uppercase tracking-tighter">Oracle's Favor</h4>
+              <div className="bg-slate-950 p-6 rounded-2xl border border-white/5 shadow-inner">
+                <p className="text-3xl font-black text-blue-400">+{awardPopup.xp} XP</p>
+                <p className="text-lg font-black text-yellow-500/80">+{Math.floor(awardPopup.xp / 2)} GOLD</p>
+              </div>
+              <p className="text-slate-300 font-bold italic text-lg leading-snug">"{awardPopup.message}"</p>
+            </div>
           </div>
         </div>
       )}
