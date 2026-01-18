@@ -116,10 +116,23 @@ export const getAIAdvice = async (tasks: any[]) => {
   return response.text;
 };
 
-export const getWeatherForecast = async () => {
+const WEATHER_CACHE_KEY = 'lifequest_weather_v2';
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+export const getWeatherForecast = async (forceRefresh = false) => {
+  if (!forceRefresh) {
+    const cached = localStorage.getItem(WEATHER_CACHE_KEY);
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_TTL) {
+        return data;
+      }
+    }
+  }
+
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3-flash-preview',
       contents: "Search BOM (Bureau of Meteorology) for current Sydney weather. I need the current temperature, feels like temp, max/min, summary, and rain range (e.g. 10-70mm). ALSO get the hourly forecast for the next 12 hours including time, icon type, temp, feels like, and rain amount. Return as a single JSON object.",
       config: {
         tools: [{ googleSearch: {} }],
@@ -156,9 +169,20 @@ export const getWeatherForecast = async () => {
 
     const data = JSON.parse(response.text);
     const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    return { ...data, sources };
-  } catch (e) {
+    const weatherData = { ...data, sources };
+
+    localStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify({
+      data: weatherData,
+      timestamp: Date.now()
+    }));
+
+    return weatherData;
+  } catch (e: any) {
     console.error("Weather fetch failed", e);
+    // Return partial error info to UI if quota is hit
+    if (e?.message?.includes('429') || e?.message?.includes('RESOURCE_EXHAUSTED')) {
+      return { error: 'QUOTA_REACHED' };
+    }
     return null;
   }
 };

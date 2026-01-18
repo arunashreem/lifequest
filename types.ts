@@ -41,6 +41,14 @@ export interface Task {
   timeSpent?: number; // In minutes for Work tracker
 }
 
+export interface Milestone {
+  id: string;
+  title: string;
+  date: string; // ISO string
+  category: 'EVENT' | 'ACHIEVEMENT' | 'DEADLINE' | 'HOLIDAY';
+  isYearly?: boolean;
+}
+
 export interface Book {
   id: string;
   title: string;
@@ -49,6 +57,27 @@ export interface Book {
   coverUrl?: string;
   dateCompleted?: string;
   difficulty?: Difficulty;
+}
+
+export interface Resource {
+  id: string;
+  title: string;
+  url: string;
+  description: string;
+  category: 'video' | 'blog' | 'podcast' | 'other';
+  notes: string;
+  completed: boolean;
+  order: number;
+  dateAdded: string;
+}
+
+export interface ContentIdea {
+  id: string;
+  title: string;
+  description: string;
+  platform: 'blog' | 'video' | 'social' | 'other';
+  sourceResourceId?: string;
+  dateCreated: string;
 }
 
 export interface Habit {
@@ -73,23 +102,8 @@ export interface TimetableSlot {
   status?: 'attended' | 'missed' | 'pending';
 }
 
-export interface RoutineSlot {
-  id: string;
-  time: string;
-  activity: string;
-  category: TaskCategory;
-  isHabit?: boolean;
-}
-
-export interface Reward {
-  id: string;
-  title: string;
-  cost: number;
-  type: 'SCREEN_TIME' | 'FUN' | 'FOOD' | 'OTHER';
-  duration?: number; // minutes
-}
-
 export interface UserStats {
+  name: string;
   level: number;
   xp: number;
   maxXp: number;
@@ -98,6 +112,7 @@ export interface UserStats {
   screenTimeBank: number;
   lastPostureCheck: string; // ISO string
   postureStreak: number;
+  avatarSeed?: string;
   attributes: {
     strength: number;
     intelligence: number;
@@ -115,15 +130,19 @@ export interface Countdown {
   color?: 'orange' | 'blue' | 'purple' | 'red';
 }
 
-export type AssessmentMap = Record<string, string>; // key format: "termX_weekY"
-
 export interface GameState {
   tasks: Task[];
   stats: UserStats;
-  rewards: Reward[];
-  timetable: TimetableSlot[];
-  assessments: AssessmentMap;
-  habits: Habit[];
-  routine: RoutineSlot[];
-  books: Book[];
+  milestones: Milestone[];
 }
+
+// Added Reward and AssessmentMap to fix import errors in several components
+export interface Reward {
+  id: string;
+  title: string;
+  cost: number;
+  type: 'SCREEN_TIME' | 'FUN' | 'FOOD' | 'OTHER' | string;
+  duration?: number;
+}
+
+export type AssessmentMap = Record<string, string>;

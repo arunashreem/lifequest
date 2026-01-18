@@ -4,97 +4,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LifeQuest RPG</title>
+    <title>LifeQuest RPG | Tactical Command</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-deep: #020617;
-            --card-bg: rgba(15, 23, 42, 0.4);
-            --accent-blue: #3b82f6;
+            --card-bg: rgba(13, 20, 38, 0.6);
+            --accent-primary: #3b82f6;
+            --accent-primary-glow: rgba(59, 130, 246, 0.5);
             --accent-gold: #fbbf24;
-            --sidebar-glass: rgba(15, 23, 42, 0.8);
+            --sidebar-glass: rgba(5, 10, 20, 0.9);
+            --border-white: rgba(255, 255, 255, 0.08);
         }
+
+        body.system-alert {
+            --accent-primary: #ef4444;
+            --accent-primary-glow: rgba(239, 68, 68, 0.5);
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-deep);
-            color: #f8fafc;
+            color: #f1f5f9;
             overflow-x: hidden;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(30, 58, 138, 0.15) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(88, 28, 135, 0.1) 0px, transparent 50%);
+                radial-gradient(circle at 50% -20%, rgba(30, 58, 138, 0.3) 0%, transparent 50%),
+                linear-gradient(rgba(2, 6, 23, 0.94), rgba(2, 6, 23, 0.94)),
+                url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
             background-attachment: fixed;
+            cursor: crosshair;
         }
+        
+        /* Advanced CRT Overlay */
+        .crt-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            z-index: 10000;
+            opacity: 0.3;
+            mix-blend-mode: overlay;
+        }
+
+        /* Ambient Noise */
+        .noise-layer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://grainy-gradients.vercel.app/noise.svg');
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: soft-light;
+        }
+
+        .parallax-bg {
+            position: fixed;
+            top: -10%; left: -10%; width: 120%; height: 120%;
+            background-image: 
+                radial-gradient(circle at 2px 2px, var(--accent-primary-glow) 1px, transparent 0);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.2;
+            animation: stars-drift 100s linear infinite;
+        }
+
+        @keyframes stars-drift {
+            from { transform: translate(0, 0); }
+            to { transform: translate(-30px, -30px); }
+        }
+
         .pixel-font {
-            font-family: 'Press+Start+2P', cursive;
+            font-family: 'Press Start 2P', cursive;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.8);
         }
+        
         .rpg-card {
             background: var(--card-bg);
-            backdrop-filter: blur(16px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--border-white);
+            box-shadow: 
+                0 15px 35px -5px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
+        
         .rpg-card:hover {
-            border-color: rgba(59, 130, 246, 0.4);
-            background: rgba(15, 23, 42, 0.6);
+            border-color: rgba(59, 130, 246, 0.3);
             transform: translateY(-2px);
-            box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.5);
+            background: rgba(15, 23, 42, 0.7);
+            box-shadow: 
+                0 25px 50px -10px rgba(0, 0, 0, 0.6),
+                0 0 20px var(--accent-primary-glow);
         }
-        .xp-bar-fill {
-            transition: width 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
+
+        .text-glow {
+            text-shadow: 0 0 10px var(--accent-primary-glow);
         }
-        .xp-bar-fill::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            animation: shimmer 2s infinite;
+
+        .btn-glow:hover {
+            box-shadow: 0 0 15px var(--accent-primary-glow);
+            filter: brightness(1.1);
         }
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 5px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(51, 65, 85, 0.5);
+            background: #1e293b;
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(71, 85, 105, 0.8);
+            background: var(--accent-primary);
         }
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
+
+        @keyframes flicker {
+          0% { opacity: 0.99; }
+          5% { opacity: 0.97; }
+          10% { opacity: 0.99; }
+          15% { opacity: 0.96; }
+          100% { opacity: 1; }
         }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-12px) rotate(2deg); }
+        .crt-flicker {
+            animation: flicker 0.15s infinite;
         }
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
-        }
-        .text-glow {
-            text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
-        }
-        .glow-border {
-            position: relative;
-        }
-        .glow-border::after {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            background: linear-gradient(45deg, #3b82f6, transparent, #8b5cf6);
-            border-radius: inherit;
-            z-index: -1;
-            opacity: 0.3;
+
+        /* Fluid Width Utilities */
+        .content-width-safe {
+            max-width: 100%;
+            box-sizing: border-box;
         }
     </style>
 <script type="importmap">
@@ -112,6 +157,9 @@
 <link rel="stylesheet" href="/index.css">
 </head>
 <body>
+    <div class="crt-overlay crt-flicker"></div>
+    <div class="noise-layer"></div>
+    <div id="parallax-layer" class="parallax-bg"></div>
     <div id="root"></div>
 <script type="module" src="/index.tsx"></script>
 </body>

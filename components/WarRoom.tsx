@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Task, TaskCategory } from '../types';
-import { ShieldAlert, Flame, CheckCircle2, Circle, Clock, Sword, Plus, Wand2, Loader2, Trophy, Send } from 'lucide-react';
+import { ShieldAlert, Flame, CheckCircle2, Circle, Clock, Sword, Plus, Wand2, Loader2, Trophy, Send, X, Calendar } from 'lucide-react';
 import { DIFFICULTY_COLORS, CATEGORY_ICONS } from '../constants';
 import { evaluateGrindSession } from '../services/gemini';
 
@@ -11,12 +11,18 @@ interface WarRoomProps {
   onCompleteTask: (id: string) => void;
   onAddTime: (taskId: string, mins: number) => void;
   onManualXpAward: (xp: number, message: string) => void;
+  onAddBoss: (title: string, dueDate: string) => void;
 }
 
-const WarRoom: React.FC<WarRoomProps> = ({ tasks, onCompleteSubTask, onCompleteTask, onAddTime, onManualXpAward }) => {
+const WarRoom: React.FC<WarRoomProps> = ({ tasks, onCompleteSubTask, onCompleteTask, onAddTime, onManualXpAward, onAddBoss }) => {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [showAddBoss, setShowAddBoss] = useState(false);
   const [grindInput, setGrindInput] = useState('');
+  
+  // New Boss Form State
+  const [newBossTitle, setNewBossTitle] = useState('');
+  const [newBossDate, setNewBossDate] = useState('');
 
   const bosses = tasks.filter(t => t.isBoss && !t.completed);
   const workInProgress = tasks.filter(t => (t.category === TaskCategory.WORK || t.category === TaskCategory.STUDY || t.category === TaskCategory.HOMEWORK) && !t.completed && !t.isBoss);
@@ -36,6 +42,15 @@ const WarRoom: React.FC<WarRoomProps> = ({ tasks, onCompleteSubTask, onCompleteT
     } finally {
       setIsEvaluating(false);
     }
+  };
+
+  const handleCreateBoss = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBossTitle.trim() || !newBossDate) return;
+    onAddBoss(newBossTitle, newBossDate);
+    setNewBossTitle('');
+    setNewBossDate('');
+    setShowAddBoss(false);
   };
 
   return (
@@ -78,19 +93,90 @@ const WarRoom: React.FC<WarRoomProps> = ({ tasks, onCompleteSubTask, onCompleteT
         </div>
       )}
 
-      {/* Assessment Planner / Boss Raids */}
-      <section>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="bg-red-500 p-2 rounded-lg">
-            <ShieldAlert className="text-white" size={24} />
-          </div>
-          <div>
-            <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Boss Raids</h2>
-            <p className="text-slate-400 text-sm">Major assessments and projects. Complete all phases to win.</p>
+      {/* Add Boss Modal */}
+      {showAddBoss && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-950/90 backdrop-blur-xl animate-in fade-in duration-300" onClick={() => setShowAddBoss(false)} />
+          <div className="relative w-full max-w-lg rpg-card p-10 rounded-[3rem] border-red-500/50 shadow-[0_0_60px_rgba(239,68,68,0.2)] animate-in zoom-in-95 duration-500 overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-5">
+              <ShieldAlert size={140} className="text-red-500" />
+            </div>
+            
+            <button onClick={() => setShowAddBoss(false)} className="absolute top-6 right-6 text-slate-600 hover:text-white transition-all"><X size={24} /></button>
+            
+            <div className="relative z-10 space-y-8">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-red-500/20 rounded-2xl border-2 border-red-500/40 flex items-center justify-center mx-auto mb-4 animate-pulse">
+                  <Plus size={32} className="text-red-500" />
+                </div>
+                <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic">Forge Boss Raid</h3>
+                <p className="text-[10px] font-black text-red-500 uppercase tracking-[0.4em] mt-2">Scribe a Major Objective</p>
+              </div>
+
+              <form onSubmit={handleCreateBoss} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Raid Designation</label>
+                  <input 
+                    type="text" 
+                    value={newBossTitle}
+                    onChange={e => setNewBossTitle(e.target.value)}
+                    autoFocus
+                    placeholder="E.g. Term 1 History Dissertation"
+                    className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-6 py-5 text-white focus:border-red-500 outline-none transition-all shadow-inner"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Timeline Culmination</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 text-red-500 opacity-40" size={20} />
+                    <input 
+                      type="date" 
+                      value={newBossDate}
+                      onChange={e => setNewBossDate(e.target.value)}
+                      className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl pl-16 pr-6 py-5 text-white focus:border-red-500 outline-none transition-all shadow-inner"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button 
+                    type="submit" 
+                    disabled={!newBossTitle.trim() || !newBossDate}
+                    className="w-full py-5 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 disabled:opacity-30 text-white rounded-[1.5rem] font-black text-sm uppercase tracking-widest shadow-2xl shadow-red-900/40 transition-all active:scale-95"
+                  >
+                    Seal the Vow
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 gap-6">
+      {/* Assessment Planner / Boss Raids */}
+      <section>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="bg-red-500 p-2 rounded-lg">
+              <ShieldAlert className="text-white" size={24} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Boss Raids</h2>
+              <p className="text-slate-400 text-sm">Major assessments and projects. Complete all phases to win.</p>
+            </div>
+          </div>
+          
+          <button 
+            onClick={() => setShowAddBoss(true)}
+            className="flex items-center justify-center gap-3 bg-slate-900 hover:bg-red-600 border border-slate-800 hover:border-red-400 text-slate-400 hover:text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-xl active:scale-95"
+          >
+            <Plus size={18} className="text-red-500 group-hover:text-white" />
+            Forge Raid
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {bosses.length > 0 ? bosses.map(boss => (
             <div key={boss.id} className="rpg-card rounded-2xl p-6 border-red-900/30 bg-gradient-to-br from-slate-900 to-red-950/20 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -116,11 +202,8 @@ const WarRoom: React.FC<WarRoomProps> = ({ tasks, onCompleteSubTask, onCompleteT
                       <button 
                         key={sub.id}
                         onClick={() => onCompleteSubTask(boss.id, sub.id)}
-                        className={`flex items-center gap-3 w-full p-3 rounded-xl border transition-all ${
-                          sub.completed 
-                            ? 'bg-slate-800/50 border-slate-700 text-slate-500' 
-                            : 'bg-slate-950/50 border-slate-800 text-slate-300 hover:border-red-500/50 hover:bg-red-500/5'
-                        }`}
+                        className="flex items-center gap-3 w-full p-3 rounded-xl border transition-all bg-slate-950/50 border-slate-800 text-slate-300 hover:border-red-500/50 hover:bg-red-500/5"
+                        style={sub.completed ? { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 1)', color: 'rgba(100, 116, 139, 1)' } : {}}
                       >
                         {sub.completed ? <CheckCircle2 size={18} className="text-green-500" /> : <Circle size={18} />}
                         <span className={`text-sm font-bold ${sub.completed ? 'line-through' : ''}`}>{sub.title}</span>
@@ -129,7 +212,7 @@ const WarRoom: React.FC<WarRoomProps> = ({ tasks, onCompleteSubTask, onCompleteT
                   </div>
                 </div>
 
-                <div className="md:w-48 flex flex-col items-center justify-center p-6 bg-slate-950/50 rounded-2xl border border-slate-800 text-center">
+                <div className="md:w-48 flex flex-col items-center justify-center p-6 bg-slate-950/50 rounded-2xl border border-slate-800 text-center shrink-0">
                    <div className="mb-4">
                     <p className="text-[10px] font-black text-slate-500 uppercase">Victory Loot</p>
                     <p className="text-2xl font-black text-yellow-500">+{boss.xpValue} XP</p>
@@ -145,9 +228,9 @@ const WarRoom: React.FC<WarRoomProps> = ({ tasks, onCompleteSubTask, onCompleteT
               </div>
             </div>
           )) : (
-            <div className="py-12 text-center rpg-card border-dashed border-slate-800 rounded-2xl opacity-40">
-              <Sword size={48} className="mx-auto mb-4" />
-              <p className="pixel-font text-[10px]">No Boss Raids detected.</p>
+            <div className="col-span-full py-16 text-center rpg-card border-dashed border-slate-800 rounded-[2.5rem] opacity-40 max-w-3xl mx-auto w-full">
+              <Sword size={48} className="mx-auto mb-6 text-slate-600" />
+              <p className="pixel-font text-[11px] tracking-widest text-slate-500 uppercase">No Boss Raids detected.</p>
             </div>
           )}
         </div>
@@ -207,8 +290,8 @@ const WarRoom: React.FC<WarRoomProps> = ({ tasks, onCompleteSubTask, onCompleteT
             </div>
           ))}
           {workInProgress.length === 0 && (
-             <div className="md:col-span-2 py-8 text-center bg-slate-900/40 border-2 border-dashed border-slate-800 rounded-2xl opacity-40">
-               <p className="pixel-font text-[9px]">No Active Grinds. Start a session or use "Declare Victory".</p>
+             <div className="md:col-span-2 py-10 text-center bg-slate-900/40 border-2 border-dashed border-slate-800 rounded-[2rem] opacity-40 max-w-3xl mx-auto w-full">
+               <p className="pixel-font text-[11px] tracking-widest text-slate-500 uppercase">No Active Grinds.</p>
              </div>
           )}
         </div>

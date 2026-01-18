@@ -70,10 +70,10 @@ const DailyRoutine: React.FC<DailyRoutineProps> = ({ tasks, timetable, assessmen
       items.push({ time: '11:00', activity: 'Stamina Recovery: Chill / Play', category: TaskCategory.SCREEN_TIME });
     }
 
-    // Boss Raid Check (Assessments)
+    // Boss Raid Check (Assessments) - Added explicit string cast to fix val.trim() error
     const currentWeekAssessments = Object.entries(assessments)
-      .filter(([key, val]) => val.trim() !== '' && key.includes('term1'))
-      .map(([_, val]) => val);
+      .filter(([key, val]) => (val as string).trim() !== '' && key.includes('term1'))
+      .map(([_, val]) => val as string);
     
     if (currentWeekAssessments.length > 0) {
       items.push({

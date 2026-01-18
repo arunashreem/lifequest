@@ -9,112 +9,151 @@ interface CharacterStatsProps {
 
 const CharacterStats: React.FC<CharacterStatsProps> = ({ stats }) => {
   const xpPercentage = (stats.xp / stats.maxXp) * 100;
+  const avatarSeed = stats.avatarSeed || 'Hero';
 
   const AttributeRow = ({ icon, label, value, color, glow }: { icon: React.ReactNode, label: string, value: number, color: string, glow: string }) => (
-    <div className="flex items-center justify-between group py-2 px-1 rounded-xl hover:bg-white/[0.02] transition-colors">
-      <div className="flex items-center gap-4">
-        <div className={`${color} p-2.5 rounded-xl text-white group-hover:scale-110 transition-all shadow-lg ${glow}`}>
-          {icon}
+    <div className="flex flex-col gap-2 p-3 sm:p-4 rounded-2xl bg-slate-950/40 border border-white/[0.03] hover:border-white/10 hover:bg-white/[0.02] transition-all duration-300 group">
+      <div className="flex items-center justify-between min-w-0 gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className={`relative ${color} p-1.5 sm:p-2 rounded-lg text-white group-hover:scale-105 transition-all shadow-lg ${glow} shrink-0`}>
+            <div className="relative z-10 scale-90 sm:scale-100">{icon}</div>
+          </div>
+          <span className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest truncate">{label}</span>
         </div>
-        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{label}</span>
+        <span className="text-xs sm:text-sm font-black text-white italic tracking-tighter tabular-nums">{value}</span>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="h-1.5 w-16 bg-slate-950 rounded-full overflow-hidden hidden sm:block border border-white/[0.03]">
-          <div className={`${color} h-full transition-all duration-1000 ${glow}`} style={{ width: `${Math.min(100, value * 10)}%` }} />
-        </div>
-        <span className="text-xs font-black text-white bg-slate-950 px-3 py-1.5 rounded-xl border border-white/5 shadow-inner min-w-[36px] text-center">
-          {value}
-        </span>
+      <div className="flex gap-1 h-1 w-full">
+        {[...Array(10)].map((_, i) => (
+          <div 
+            key={i} 
+            className={`flex-1 rounded-full transition-all duration-700 ${
+              i < value ? `${color} ${glow} shadow-[0_0_6px_currentColor]` : 'bg-slate-900 opacity-20'
+            }`} 
+          />
+        ))}
       </div>
     </div>
   );
 
   return (
-    <div className="rpg-card rounded-[3rem] p-8 border-white/[0.05] shadow-2xl relative overflow-hidden group">
-      {/* Dynamic Background Effects */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 blur-[60px] pointer-events-none group-hover:bg-blue-600/20 transition-all" />
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-600/5 blur-[50px] pointer-events-none" />
+    <div className="rpg-card rounded-[2.5rem] p-5 sm:p-8 md:p-10 border-white/[0.05] shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden group w-full max-w-full">
+      {/* Background Ambience Elements */}
+      <div className="absolute top-0 right-0 w-80 h-80 bg-blue-600/10 blur-[100px] pointer-events-none group-hover:bg-blue-600/15 transition-all duration-1000" />
+      <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-600/5 blur-[80px] pointer-events-none" />
       
-      {/* Header Section */}
-      <div className="flex flex-col gap-8 mb-10 relative z-10">
-        <div className="flex flex-row items-center gap-6">
+      <div className="flex flex-col gap-6 sm:gap-8 md:gap-10 relative z-10">
+        {/* Header HUD Section */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 md:gap-8 min-w-0">
+          {/* Avatar Area */}
           <div className="relative shrink-0">
-            <div className="absolute inset-0 bg-blue-500 blur-xl opacity-20 group-hover:opacity-40 transition-opacity" />
-            <div className="w-24 h-24 rounded-[2rem] border-2 border-blue-500/30 overflow-hidden bg-slate-800 flex items-center justify-center p-2.5 shadow-2xl relative z-10 group-hover:border-blue-500/60 transition-all ring-4 ring-slate-950">
-              <img 
-                src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=Hero&backgroundColor=1e293b&radius=20`} 
-                alt="Avatar" 
-                className="w-full h-full object-contain drop-shadow-xl"
-              />
-            </div>
-            <div className="absolute -bottom-2 -right-2 bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black px-4 py-1.5 rounded-2xl text-[10px] border-4 border-slate-900 shadow-2xl uppercase tracking-[0.1em] z-20">
-              LVL {stats.level}
+            <div className="relative">
+              <div className="absolute inset-[-10px] bg-blue-500/15 blur-2xl animate-pulse" />
+              <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-[2.5rem] border border-white/10 overflow-hidden bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 flex items-center justify-center p-3 shadow-2xl relative z-10 group-hover:border-blue-400/40 transition-all ring-4 ring-slate-950/50">
+                <img 
+                  src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${avatarSeed}&backgroundColor=1e293b&radius=20`} 
+                  alt="Avatar" 
+                  className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(59,130,246,0.4)]"
+                />
+              </div>
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-gradient-to-br from-blue-600 to-indigo-800 text-white font-black px-4 py-1.5 rounded-xl text-[9px] sm:text-[10px] border-2 border-slate-950 shadow-xl uppercase tracking-widest z-20 whitespace-nowrap">
+                LVL {stats.level}
+              </div>
             </div>
           </div>
           
-          <div className="flex-1 min-w-0">
-            <h2 className="text-base font-black text-white uppercase tracking-tight leading-none mb-3 flex flex-col gap-1">
-              <span className="text-[10px] text-blue-400 font-black tracking-[0.4em] opacity-80">LEGENDARY</span>
-              <span className="text-2xl sm:text-3xl truncate italic text-glow">The Hero</span>
+          {/* Identity & Progress Area */}
+          <div className="flex-1 flex flex-col items-center sm:items-start text-center sm:text-left min-w-0 w-full pt-1">
+            <span className="text-[8px] sm:text-[9px] text-blue-400 font-black tracking-[0.3em] uppercase text-glow mb-1 block opacity-80">
+              {stats.level >= 50 ? 'DIVINE SOVEREIGN' : stats.level >= 20 ? 'MASTER VANGUARD' : 'LEGENDARY HERO'}
+            </span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white italic tracking-tighter leading-tight text-glow break-words w-full mb-5">
+              {stats.name}
             </h2>
-            <div className="inline-flex items-center gap-2 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/[0.05] shadow-inner">
-              <Star size={12} className="text-yellow-500 fill-yellow-500" />
-              <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                {stats.xp.toLocaleString()} <span className="text-slate-600 mx-1">/</span> {stats.maxXp.toLocaleString()} <span className="text-slate-500 ml-1">XP</span>
-              </span>
+            
+            {/* Experience Unit - Redesigned to fix overlap */}
+            <div className="w-full flex items-center gap-3 bg-slate-950/60 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-white/[0.05] shadow-xl group-hover:border-blue-500/20 transition-all">
+              <div className="p-2 bg-yellow-500/10 rounded-lg border border-yellow-500/15 shrink-0">
+                <Star size={16} className="text-yellow-400 animate-spin-slow" />
+              </div>
+              <div className="flex flex-col min-w-0 flex-1">
+                <div className="flex items-baseline gap-1.5 overflow-hidden">
+                  <span className="text-sm sm:text-base font-black text-white tabular-nums tracking-widest leading-none whitespace-nowrap">
+                    {stats.xp.toLocaleString()} 
+                  </span>
+                  <span className="text-[10px] font-black text-slate-600 leading-none">/</span>
+                  <span className="text-xs sm:text-sm font-black text-slate-400 tabular-nums leading-none whitespace-nowrap">
+                    {stats.maxXp.toLocaleString()}
+                  </span>
+                </div>
+                <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1.5 opacity-60">Exp Manifested</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* XP Bar Container */}
-        <div className="space-y-2.5">
-          <div className="w-full h-4 bg-slate-950 rounded-full border-2 border-white/[0.05] overflow-hidden relative shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]">
+        {/* HUD Progress Bar */}
+        <div className="relative px-0.5">
+          <div className="w-full h-4 sm:h-5 bg-slate-950/80 rounded-xl border border-white/[0.03] overflow-hidden relative shadow-inner">
             <div 
-              className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-cyan-400 xp-bar-fill relative z-10 shadow-[0_0_20px_rgba(37,99,235,0.4)]"
-              style={{ width: `${xpPercentage}%` }}
-            />
-          </div>
-          <div className="flex justify-between items-center px-1 text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">
-             <span className="group-hover:text-blue-400 transition-colors">Progression Momentum</span>
-             <span className="text-blue-400">{Math.round(xpPercentage)}% Complete</span>
+              className="h-full bg-gradient-to-r from-blue-800 via-blue-500 to-cyan-400 relative z-10 transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(59,130,246,0.4)]"
+              style={{ width: `${Math.min(100, xpPercentage)}%` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-30" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+            </div>
           </div>
         </div>
 
-        {/* Vital Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center gap-3 bg-slate-950/60 p-3 rounded-2xl border border-white/[0.05] shadow-inner hover:border-yellow-500/20 transition-all">
-            <div className="w-8 h-8 rounded-xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20 shadow-lg">
-              <Coins size={14} className="text-yellow-500" />
+        {/* Vital Stats Cluster */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+          <div className="bg-slate-950/50 p-4 sm:p-5 rounded-[2rem] border border-white/[0.03] shadow-lg hover:border-yellow-500/20 transition-all flex flex-col items-center sm:flex-row gap-3 group/stat">
+            <div className="w-10 h-10 rounded-lg bg-yellow-500/5 flex items-center justify-center border border-yellow-500/10 shrink-0 group-hover/stat:rotate-6 transition-all">
+              <Coins size={18} className="text-yellow-500" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-black text-white leading-none">{stats.gold.toLocaleString()}</span>
-              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">Sovereign</span>
+            <div className="text-center sm:text-left min-w-0 flex-1">
+              <span className="text-xl sm:text-2xl font-black text-white tracking-tighter tabular-nums leading-none block truncate">
+                {stats.gold.toLocaleString()}
+              </span>
+              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">Spoils</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-3 bg-slate-950/60 p-3 rounded-2xl border border-white/[0.05] shadow-inner hover:border-orange-500/20 transition-all">
-            <div className="w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20 shadow-lg">
-              <Flame size={14} className="text-orange-500" />
+          <div className="bg-slate-950/50 p-4 sm:p-5 rounded-[2rem] border border-white/[0.03] shadow-lg hover:border-orange-500/20 transition-all flex flex-col items-center sm:flex-row gap-3 group/stat">
+            <div className="w-10 h-10 rounded-lg bg-orange-500/5 flex items-center justify-center border border-orange-500/10 shrink-0 group-hover/stat:rotate-6 transition-all">
+              <Flame size={18} className="text-orange-400 animate-pulse" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-black text-white leading-none">{stats.streak}D</span>
-              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">Momentum</span>
+            <div className="text-center sm:text-left min-w-0 flex-1">
+              <span className="text-xl sm:text-2xl font-black text-white tracking-tighter tabular-nums leading-none block truncate">
+                {stats.streak}D
+              </span>
+              <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">Streak</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Attributes Matrix Section */}
+        <div className="pt-6 border-t border-white/[0.05] relative">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#020617] px-6 py-1 rounded-full border border-white/5 shadow-lg z-10">
+             <span className="text-[9px] font-black text-blue-400 uppercase tracking-widest italic opacity-70">Ascension Matrix</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">
+            <AttributeRow icon={<Shield size={14}/>} label="Might" value={stats.attributes.strength} color="bg-rose-500" glow="shadow-rose-600/30" />
+            <AttributeRow icon={<Brain size={14}/>} label="Intel" value={stats.attributes.intelligence} color="bg-indigo-500" glow="shadow-indigo-600/30" />
+            <AttributeRow icon={<Zap size={14}/>} label="Will" value={stats.attributes.wisdom} color="bg-amber-500" glow="shadow-amber-600/30" />
+            <AttributeRow icon={<Heart size={14}/>} label="Core" value={stats.attributes.vitality} color="bg-emerald-500" glow="shadow-emerald-600/30" />
+            <div className="sm:col-span-2">
+              <AttributeRow icon={<Users size={14}/>} label="Charisma" value={stats.attributes.charisma} color="bg-fuchsia-500" glow="shadow-fuchsia-600/30" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Attributes Section */}
-      <div className="space-y-4 pt-8 border-t border-white/[0.05]">
-        <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.5em] mb-4 text-center opacity-60">Ascension Matrix</h3>
-        <div className="grid grid-cols-1 gap-1">
-          <AttributeRow icon={<Shield size={14}/>} label="Might" value={stats.attributes.strength} color="bg-rose-500" glow="shadow-rose-900/40" />
-          <AttributeRow icon={<Brain size={14}/>} label="Intel" value={stats.attributes.intelligence} color="bg-indigo-500" glow="shadow-indigo-900/40" />
-          <AttributeRow icon={<Zap size={14}/>} label="Will" value={stats.attributes.wisdom} color="bg-amber-500" glow="shadow-amber-900/40" />
-          <AttributeRow icon={<Heart size={14}/>} label="Core" value={stats.attributes.vitality} color="bg-emerald-500" glow="shadow-emerald-900/40" />
-          <AttributeRow icon={<Users size={14}/>} label="Ego" value={stats.attributes.charisma} color="bg-fuchsia-500" glow="shadow-fuchsia-900/40" />
-        </div>
-      </div>
+      <style>{`
+        .animate-shimmer { animation: shimmer 3s infinite linear; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .animate-spin-slow { animation: spin 8s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 };

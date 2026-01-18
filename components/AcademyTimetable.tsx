@@ -1,22 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { TimetableSlot } from '../types';
 import { 
-  Book, 
-  Coffee, 
-  Utensils, 
-  Home, 
-  BellRing, 
   Layers, 
   UserCheck, 
   UserX, 
   MapPin, 
-  User, 
   Sword, 
   Sparkles, 
   CheckCircle2, 
   RefreshCw, 
-  Clock 
+  ShieldAlert,
+  CalendarDays,
+  User,
+  Edit2
 } from 'lucide-react';
 
 interface AcademyTimetableProps {
@@ -28,30 +25,56 @@ interface AcademyTimetableProps {
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const WEEKS = ['Week A', 'Week B'];
 
-const getSubjectColorClasses = (subject: string, status?: string): string => {
-  const s = subject.toLowerCase();
-  let base = '';
-  if (s.includes('english')) base = 'border-l-yellow-400 bg-yellow-400/5 text-yellow-200';
-  else if (s.includes('maths')) base = 'border-l-red-400 bg-red-400/5 text-red-200';
-  else if (s.includes('science')) base = 'border-l-teal-400 bg-teal-400/5 text-teal-200';
-  else if (s.includes('history') || s.includes('geography')) base = 'border-l-orange-400 bg-orange-400/5 text-orange-200';
-  else if (s.includes('pdhpe')) base = 'border-l-lime-400 bg-lime-400/5 text-lime-200';
-  else if (s.includes('food')) base = 'border-l-purple-400 bg-purple-400/5 text-purple-200';
-  else if (s.includes('languages')) base = 'border-l-blue-400 bg-blue-400/5 text-blue-200';
-  else if (s.includes('visual arts') || s.includes('music')) base = 'border-l-pink-400 bg-pink-400/5 text-pink-200';
-  else if (s.includes('roll call') || s.includes('mtg')) base = 'border-l-slate-400 bg-slate-400/5 text-slate-300';
-  else if (s.includes('walk home')) base = 'border-l-cyan-500 bg-cyan-500/5 text-cyan-200';
-  else base = 'border-l-slate-700 bg-slate-800/20 text-slate-400';
+const cleanSubject = (subject: string) => {
+  return subject.replace(/\s*[Yy][Rr]8\s*$/, '').trim();
+};
 
-  if (status === 'attended') return `${base} border-l-emerald-500 ring-1 ring-emerald-500/10 opacity-100`;
-  if (status === 'missed') return `${base} border-l-red-500 opacity-30 grayscale`;
+const getSubjectColorClasses = (subject: string, status?: string, isActive?: boolean): string => {
+  const s = subject.toLowerCase();
+  // Base classes - using a slightly more opaque background for active slots as requested ("darker")
+  let base = isActive 
+    ? 'bg-slate-950 border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/20' 
+    : 'bg-slate-900/40 border-white/[0.05]';
+
+  if (s.includes('english')) base += ' border-l-yellow-500';
+  else if (s.includes('maths')) base += ' border-l-red-500';
+  else if (s.includes('science')) base += ' border-l-teal-500';
+  else if (s.includes('history') || s.includes('geography')) base += ' border-l-orange-500';
+  else if (s.includes('pdhpe')) base += ' border-l-lime-500';
+  else if (s.includes('food')) base += ' border-l-purple-500';
+  else if (s.includes('languages')) base += ' border-l-blue-500';
+  else if (s.includes('visual arts') || s.includes('music')) base += ' border-l-pink-500';
+  else if (s.includes('roll call') || s.includes('mtg')) base += ' border-l-slate-400';
+  else if (s.includes('walk home')) base += ' border-l-cyan-500';
+  else base += ' border-l-slate-700';
+
+  if (status === 'attended') return `${base} ring-1 ring-emerald-500/20`;
+  if (status === 'missed') return `${base} opacity-40 grayscale`;
+  
   return base;
 };
 
 const AcademyTimetable: React.FC<AcademyTimetableProps> = ({ timetable, onUpdateSlotField, onToggleAttendance }) => {
-  const [selectedWeek, setSelectedWeek] = useState<string>('Week A');
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [lastToggledId, setLastToggledId] = useState<string | null>(null);
+  
+  const currentWeekType = useMemo(() => {
+    const d = new Date(Date.UTC(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    return weekNo % 2 === 0 ? 'Week B' : 'Week A';
+  }, [currentTime]);
+
+  const currentDayName = useMemo(() => {
+    return currentTime.toLocaleDateString('en-US', { weekday: 'long' });
+  }, [currentTime]);
+
+  const [selectedWeek, setSelectedWeek] = useState<string>(currentWeekType);
+  const [selectedDay, setSelectedDay] = useState<string>(() => {
+    return DAYS.includes(currentDayName) ? currentDayName : 'Monday';
+  });
+
+  const [editingField, setEditingField] = useState<{id: string, field: string} | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -60,32 +83,22 @@ const AcademyTimetable: React.FC<AcademyTimetableProps> = ({ timetable, onUpdate
 
   const isCurrentSlot = (startTime: string, endTime: string, slotDay: string, slotWeek: string) => {
     if (selectedWeek !== slotWeek) return false;
-    const dayName = currentTime.toLocaleDateString('en-US', { weekday: 'long' });
-    if (dayName !== slotDay) return false;
+    if (currentDayName !== slotDay) return false;
     const nowTotal = currentTime.getHours() * 60 + currentTime.getMinutes();
     const [startH, startM] = startTime.split(':').map(Number);
     const [endH, endM] = endTime.split(':').map(Number);
     return nowTotal >= (startH * 60 + startM) && nowTotal < (endH * 60 + endM);
   };
 
-  const getIcon = (type: string, label: string) => {
-    if (label.includes('Roll')) return <BellRing size={14} />;
-    if (label === 'Recess') return <Coffee size={14} />;
-    if (label === 'Lunch') return <Utensils size={14} />;
-    if (label === 'Home Time') return <Home size={14} />;
-    return <Book size={14} />;
-  };
-
   const handleAttendanceToggle = (day: string, slotId: string) => {
-    setLastToggledId(slotId);
     onToggleAttendance(selectedWeek, day, slotId);
-    setTimeout(() => setLastToggledId(null), 600);
   };
 
-  const todayName = currentTime.toLocaleDateString('en-US', { weekday: 'long' });
+  const slots = timetable[selectedWeek]?.[selectedDay] || [];
+  const isToday = currentDayName === selectedDay;
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 max-w-full overflow-hidden">
       <style>{`
         @keyframes stamp-pop {
           0% { transform: scale(3); opacity: 0; filter: blur(5px); }
@@ -93,40 +106,44 @@ const AcademyTimetable: React.FC<AcademyTimetableProps> = ({ timetable, onUpdate
           100% { transform: scale(1); opacity: 1; }
         }
         .animate-stamp { animation: stamp-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
       {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-        <div className="flex items-center gap-6">
-          <div className="p-5 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[1.5rem] shadow-2xl shadow-indigo-900/40 rotate-[-1deg] border border-white/10">
-             <Layers className="text-white" size={36} />
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-2">
+        <div className="flex items-center gap-5">
+          <div className="p-4 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl shadow-2xl border border-white/10 shrink-0">
+             <Layers className="text-white" size={28} />
           </div>
           <div>
-            <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic">Academy Campaign Map</h2>
-            <div className="flex items-center gap-3 mt-1">
-               <span className="flex items-center gap-1.5 text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">
-                <Sparkles size={12} className="text-yellow-500 animate-pulse" />
-                Year 8 Strategic View
-              </span>
-            </div>
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none">Academy Campaign</h2>
+            <p className="flex items-center gap-1.5 text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">
+              <Sparkles size={12} className="text-yellow-500 animate-pulse" />
+              Strategic Timetable View
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
           <button 
-            onClick={() => alert("Gemini Oracle: The stars are shifting... Wait for the next Great Conjunction to re-scribe the Academy lines.")}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95"
+            onClick={() => {
+              const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+              if (DAYS.includes(today)) setSelectedDay(today);
+              setSelectedWeek(currentWeekType);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-slate-800 transition-all shrink-0"
           >
             <RefreshCw size={14} className="text-blue-500" />
-            Re-Scribe Cycle
+            Sync to Today
           </button>
           
-          <div className="flex p-1 bg-slate-900 rounded-[1.25rem] border-2 border-slate-800 shadow-xl w-64">
+          <div className="flex p-1 bg-slate-900 rounded-xl border-2 border-slate-800 shadow-xl shrink-0">
             {WEEKS.map(week => (
               <button
                 key={week}
                 onClick={() => setSelectedWeek(week)}
-                className={`flex-1 py-3 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${
+                className={`px-6 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${
                   selectedWeek === week
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
                     : 'text-slate-500 hover:text-slate-300'
@@ -139,149 +156,180 @@ const AcademyTimetable: React.FC<AcademyTimetableProps> = ({ timetable, onUpdate
         </div>
       </div>
 
-      {/* Weekly Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-        {DAYS.map((day) => {
-          const isToday = todayName === day;
-          const slots = timetable[selectedWeek]?.[day] || [];
-          
-          return (
-            <div 
-              key={day} 
-              className={`flex flex-col gap-4 transition-all duration-500 ${
-                isToday ? 'scale-[1.02] z-10' : 'opacity-100'
-              }`}
-            >
-              {/* Day Header - Highly Visible Red Re-skin */}
-              <div className={`p-4 rounded-2xl border-2 transition-all flex items-center justify-between shadow-xl ${
-                isToday 
-                  ? 'bg-gradient-to-br from-rose-500 to-red-600 border-white text-white shadow-[0_10px_40px_rgba(225,29,72,0.6)] ring-4 ring-rose-500/20' 
-                  : 'bg-rose-500/90 border-rose-400/50 text-white hover:bg-rose-500 hover:border-rose-300'
-              }`}>
-                <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2 drop-shadow-sm">
-                  {isToday && <Sparkles size={14} className="text-yellow-400 animate-pulse" />}
+      {/* Day Selection Panel */}
+      <div className="px-2">
+        <div className="flex items-center gap-2 p-2 bg-slate-950/50 rounded-[2rem] border border-white/5 shadow-2xl overflow-x-auto no-scrollbar">
+          {DAYS.map((day) => {
+            const isActualToday = currentDayName === day;
+            const isActive = selectedDay === day;
+            return (
+              <button
+                key={day}
+                onClick={() => setSelectedDay(day)}
+                className={`relative flex-1 min-w-[120px] py-4 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] transition-all duration-300 ${
+                  isActive 
+                    ? 'bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-[0_10px_25px_rgba(225,29,72,0.3)] scale-105 z-10' 
+                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
                   {day}
-                </h3>
-                {isToday && (
-                  <div className="px-2 py-0.5 bg-white/30 rounded-md text-[8px] font-black uppercase border border-white/50 animate-pulse">
-                    Today
-                  </div>
-                )}
-              </div>
+                  {isActualToday && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-              {/* Day Slots */}
-              <div className="space-y-3">
-                {slots.map((slot) => {
-                  const active = isCurrentSlot(slot.startTime, slot.endTime, day, selectedWeek);
-                  const colors = getSubjectColorClasses(slot.subject || slot.label, slot.status);
-                  const subjectName = slot.subject || slot.label;
+      {/* Single Day View Area */}
+      <div className="px-2 animate-in fade-in slide-in-from-right-4 duration-500" key={`${selectedWeek}-${selectedDay}`}>
+        <div className="max-w-3xl mx-auto space-y-4">
+          <div className="flex items-center justify-between mb-4 px-2">
+            <div className="flex items-center gap-3">
+              <CalendarDays className="text-rose-500" size={20} />
+              <h3 className="text-xl font-black text-white uppercase tracking-widest italic">{selectedDay}</h3>
+            </div>
+          </div>
 
-                  return (
-                    <div 
-                      key={slot.id}
-                      className={`rpg-card rounded-2xl p-4 border transition-all duration-300 relative group overflow-visible ${
-                        active ? 'ring-2 ring-blue-500 shadow-blue-900/20 bg-slate-800/50' : ''
-                      } ${colors}`}
-                    >
-                      {/* Tooltip Popup */}
-                      <div className="absolute bottom-[calc(100%+8px)] left-0 w-full min-w-[160px] bg-slate-950/95 border-2 border-blue-500/50 rounded-xl p-3 shadow-[0_10px_30px_rgba(0,0,0,0.8)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] pointer-events-none backdrop-blur-md">
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <div className="p-1.5 bg-blue-500/20 rounded text-blue-400">
-                            {getIcon(slot.type, slot.label)}
-                          </div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{slot.label}</p>
-                        </div>
-                        <h5 className="text-xs font-black text-white uppercase tracking-tight mb-2">{subjectName}</h5>
-                        <div className="h-px w-full bg-slate-800 mb-2" />
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-2 text-[8px] font-black text-slate-500 uppercase">
-                            <Clock size={10} className="text-blue-500" /> <span>{slot.startTime} - {slot.endTime}</span>
-                          </div>
-                          {slot.classroom && (
-                            <div className="flex items-center gap-2 text-[8px] font-black text-slate-500 uppercase">
-                              <MapPin size={10} className="text-orange-500" /> <span>{slot.classroom}</span>
-                            </div>
-                          )}
-                          {slot.teacher && (
-                            <div className="flex items-center gap-2 text-[8px] font-black text-slate-500 uppercase">
-                              <User size={10} className="text-purple-500" /> <span>{slot.teacher}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="absolute -bottom-2 left-6 w-3 h-3 bg-slate-950 border-r-2 border-b-2 border-blue-500/50 rotate-45" />
+          <div className="space-y-4 min-h-[400px]">
+            {slots.length > 0 ? slots.map((slot) => {
+              const active = isCurrentSlot(slot.startTime, slot.endTime, selectedDay, selectedWeek);
+              const colors = getSubjectColorClasses(slot.subject || slot.label, slot.status, active);
+              const subjectName = slot.subject || slot.label;
+              const isBreak = slot.type === 'break';
+
+              return (
+                <div 
+                  key={slot.id}
+                  className={`rpg-card rounded-2xl p-6 md:p-8 border-l-[6px] transition-all duration-300 relative group overflow-visible ${colors}`}
+                >
+                  <div className="flex items-center justify-between gap-6">
+                    <div className="flex-1 min-w-0">
+                      {/* Time Pill */}
+                      <div className="bg-black/40 px-3 py-1 rounded-full text-[10px] font-black text-slate-500 w-fit mb-4 border border-white/5 tracking-widest">
+                        {slot.startTime} - {slot.endTime}
                       </div>
-
-                      {/* Current Indicator */}
-                      {active && (
-                        <div className="absolute top-0 left-0 h-1.5 w-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.6)]" />
+                      
+                      {/* Subject Name - Large and Bold */}
+                      {editingField?.id === slot.id && editingField?.field === 'subject' ? (
+                        <input
+                          autoFocus
+                          className="w-full bg-slate-950 border border-blue-500 rounded-lg px-3 py-1 text-white text-3xl font-black uppercase outline-none"
+                          value={slot.subject}
+                          onBlur={() => setEditingField(null)}
+                          onChange={(e) => onUpdateSlotField(selectedWeek, selectedDay, slot.id, 'subject', e.target.value)}
+                        />
+                      ) : (
+                        <h4 
+                          onClick={() => setEditingField({id: slot.id, field: 'subject'})}
+                          className={`text-3xl md:text-4xl font-extrabold uppercase tracking-tight truncate leading-none cursor-pointer hover:text-blue-400 transition-colors flex items-center gap-3 ${slot.status === 'missed' ? 'line-through opacity-40' : 'text-white text-glow'}`}
+                        >
+                          {cleanSubject(subjectName)}
+                          <Edit2 size={16} className="opacity-0 group-hover:opacity-40" />
+                        </h4>
                       )}
 
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <div className="flex items-center gap-2 max-w-[calc(100%-36px)]">
-                           <div className={`p-2 rounded-lg bg-black/30 shrink-0 ${active ? 'text-blue-400' : 'text-slate-500'}`}>
-                            {getIcon(slot.type, slot.label)}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-[8px] font-black uppercase tracking-widest opacity-60 truncate">{slot.startTime} - {slot.endTime}</p>
-                            <h4 className={`text-xs font-black uppercase tracking-tight transition-all duration-300 truncate ${slot.status === 'missed' ? 'line-through opacity-50' : ''}`}>
-                              {subjectName}
-                            </h4>
-                          </div>
-                        </div>
-                        
-                        {slot.type !== 'break' && (
-                          <button 
-                            onClick={() => handleAttendanceToggle(day, slot.id)}
-                            className={`shrink-0 w-8 h-8 rounded-lg border flex items-center justify-center transition-all ${
-                              slot.status === 'attended' ? 'bg-emerald-600 border-emerald-400 text-white' : 
-                              slot.status === 'missed' ? 'bg-red-600 border-red-400 text-white' :
-                              'bg-black/20 border-white/5 text-white/30 hover:border-white/20 hover:text-white'
-                            }`}
+                      {/* Metadata Row */}
+                      {!isBreak && (
+                        <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mt-6">
+                          <div 
+                            onClick={() => setEditingField({id: slot.id, field: 'classroom'})}
+                            className="flex items-center gap-3 cursor-pointer group/meta"
                           >
-                             {slot.status === 'attended' ? <UserCheck size={14} /> : slot.status === 'missed' ? <UserX size={14} /> : <Sword size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex items-center justify-between mt-auto">
-                        <div className="flex items-center gap-3 opacity-60">
-                           {slot.classroom && (
-                             <div className="flex items-center gap-1 text-[8px] font-bold">
-                               <MapPin size={8} /> <span className="truncate max-w-[60px]">{slot.classroom}</span>
-                             </div>
-                           )}
-                        </div>
-                        
-                        {slot.status === 'attended' && (
-                          <div className="animate-stamp">
-                            <CheckCircle2 size={12} className="text-emerald-400" />
+                            <MapPin size={16} className="text-red-500" />
+                            {editingField?.id === slot.id && editingField?.field === 'classroom' ? (
+                              <input 
+                                autoFocus
+                                className="bg-slate-950 border border-blue-500 rounded px-1 text-white uppercase outline-none text-[10px]"
+                                value={slot.classroom}
+                                onBlur={() => setEditingField(null)}
+                                onChange={(e) => onUpdateSlotField(selectedWeek, selectedDay, slot.id, 'classroom', e.target.value)}
+                              />
+                            ) : (
+                              <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest group-hover/meta:text-slate-300">
+                                ROOM: {slot.classroom || '---'}
+                              </span>
+                            )}
                           </div>
-                        )}
+
+                          <div 
+                            onClick={() => setEditingField({id: slot.id, field: 'teacher'})}
+                            className="flex items-center gap-3 cursor-pointer group/meta"
+                          >
+                            <User size={16} className="text-blue-500" />
+                            {editingField?.id === slot.id && editingField?.field === 'teacher' ? (
+                              <input 
+                                autoFocus
+                                className="bg-slate-950 border border-blue-500 rounded px-1 text-white uppercase outline-none text-[10px]"
+                                value={slot.teacher}
+                                onBlur={() => setEditingField(null)}
+                                onChange={(e) => onUpdateSlotField(selectedWeek, selectedDay, slot.id, 'teacher', e.target.value)}
+                              />
+                            ) : (
+                              <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest group-hover/meta:text-slate-300">
+                                TEACHER: {slot.teacher || '---'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {slot.type !== 'break' && (
+                      <button 
+                        onClick={() => handleAttendanceToggle(selectedDay, slot.id)}
+                        className={`shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-2xl border-2 flex items-center justify-center transition-all shadow-2xl active:scale-90 ${
+                          slot.status === 'attended' ? 'bg-emerald-600 border-emerald-400 text-white shadow-emerald-900/40' : 
+                          slot.status === 'missed' ? 'bg-red-600 border-red-400 text-white shadow-red-900/40' :
+                          'bg-black/40 border-white/10 text-white/20 hover:border-white/40 hover:text-white'
+                        }`}
+                      >
+                         {slot.status === 'attended' ? <UserCheck size={28} /> : slot.status === 'missed' ? <UserX size={28} /> : <Sword size={24} className="opacity-40 group-hover:opacity-100 transition-opacity" />}
+                      </button>
+                    )}
+                  </div>
+
+                  {slot.status === 'attended' && (
+                    <div className="absolute -right-3 -top-3 animate-stamp z-20">
+                      <div className="p-2 bg-emerald-500 rounded-full border-4 border-slate-950 shadow-2xl">
+                        <CheckCircle2 size={18} className="text-white" />
                       </div>
                     </div>
-                  );
-                })}
+                  )}
+
+                  {active && (
+                    <div className="absolute -left-1.5 top-0 bottom-0 w-1 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-pulse" />
+                  )}
+                </div>
+              );
+            }) : (
+              <div className="py-24 px-4 rounded-[3rem] border-2 border-dashed border-slate-800 flex flex-col items-center justify-center text-center opacity-40">
+                <ShieldAlert size={48} className="text-slate-600 mb-4" />
+                <p className="text-sm font-black text-slate-500 uppercase tracking-widest">No Raids Scribed for this Chronos Node</p>
               </div>
-            </div>
-          );
-        })}
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Legend Footer */}
-      <div className="rpg-card p-6 rounded-[2rem] border-slate-800 bg-slate-900/40 flex flex-wrap gap-x-8 gap-y-4 items-center justify-center">
+      <div className="rpg-card p-6 rounded-[2.5rem] border-slate-800 bg-slate-900/40 flex flex-wrap gap-x-6 gap-y-3 items-center justify-center">
         {[
-          { color: 'bg-yellow-400', label: 'English' },
-          { color: 'bg-red-400', label: 'Maths' },
-          { color: 'bg-teal-400', label: 'Science' },
-          { color: 'bg-blue-400', label: 'Languages' },
-          { color: 'bg-orange-400', label: 'HSIE' },
-          { color: 'bg-purple-400', label: 'Tech' },
-          { color: 'bg-pink-400', label: 'Creative' },
-          { color: 'bg-lime-400', label: 'PDHPE' }
+          { color: 'bg-yellow-500', label: 'English' },
+          { color: 'bg-red-500', label: 'Maths' },
+          { color: 'bg-teal-500', label: 'Science' },
+          { color: 'bg-blue-500', label: 'Languages' },
+          { color: 'bg-orange-500', label: 'History/Geo' },
+          { color: 'bg-purple-500', label: 'Tech' },
+          { color: 'bg-pink-500', label: 'Arts/Music' },
+          { color: 'bg-lime-500', label: 'PDHPE' }
         ].map((item, i) => (
-          <div key={i} className="flex items-center gap-2 px-3 py-1 bg-slate-950/40 rounded-full border border-white/5">
-            <div className={`w-2 h-2 rounded-full ${item.color} shadow-[0_0_5px_rgba(255,255,255,0.2)]`} />
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
+          <div key={i} className="flex items-center gap-3 px-4 py-2 bg-slate-950/40 rounded-xl border border-white/5 hover:border-white/20 transition-colors">
+            <div className={`w-2 h-2 rounded-full ${item.color} shadow-[0_0_8px_rgba(255,255,255,0.2)]`} />
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
           </div>
         ))}
       </div>

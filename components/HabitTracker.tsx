@@ -1,28 +1,20 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Habit, TaskCategory } from '../types';
-import { Sparkles, Trophy, Plus, Trash2, CheckCircle2, Flame, Circle, Info, ScrollText, ZapOff } from 'lucide-react';
+import { Sparkles, Trophy, Plus, Trash2, CheckCircle2, Flame, Circle, Info, ScrollText, ZapOff, AlertTriangle, RotateCcw, Activity, ShieldCheck, Zap, History, Coins } from 'lucide-react';
 import { CATEGORY_ICONS } from '../constants';
-
-interface HabitTrackerProps {
-  habits: Habit[];
-  onToggleHabit: (id: string) => void;
-  onAddHabit: (title: string, category: TaskCategory) => void;
-  onDeleteHabit: (id: string) => void;
-  onBreakHabit: (id: string) => void;
-}
 
 const Confetti = () => {
   return (
     <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
       {[...Array(100)].map((_, i) => {
-        const size = Math.random() * 8 + 4;
+        const size = Math.random() * 10 + 5;
         const color = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#a855f7', '#ec4899', '#ffffff'][Math.floor(Math.random() * 7)];
-        const delay = Math.random() * 0.5; // Tighter burst delay
-        const duration = 2.5 + Math.random() * 2.5;
+        const delay = Math.random() * 0.8; 
+        const duration = 3 + Math.random() * 3;
         const left = Math.random() * 100;
         const rotationStart = Math.random() * 360;
-        const swingX = (Math.random() - 0.5) * 60; // Sway amount
+        const swingX = (Math.random() - 0.5) * 100;
         
         return (
           <div
@@ -33,7 +25,7 @@ const Confetti = () => {
               width: `${size}px`,
               height: `${size}px`,
               backgroundColor: color,
-              borderRadius: Math.random() > 0.5 ? '50%' : '1px',
+              borderRadius: Math.random() > 0.5 ? '50%' : '2px',
               animationDelay: `${delay}s`,
               animationDuration: `${duration}s`,
               transform: `rotate(${rotationStart}deg)`,
@@ -45,28 +37,24 @@ const Confetti = () => {
       })}
       <style>{`
         @keyframes confetti-fall {
-          0% { 
-            transform: translateY(-10vh) rotate(0deg) translateX(0); 
-            opacity: 0;
-          }
-          10% {
-            opacity: 1;
-          }
-          50% {
-            transform: translateY(50vh) rotate(180deg) translateX(var(--swing-x));
-          }
-          100% { 
-            transform: translateY(115vh) rotate(720deg) translateX(0); 
-            opacity: 0; 
-          }
+          0% { transform: translateY(-10vh) rotate(0deg) translateX(0); opacity: 0; }
+          15% { opacity: 1; }
+          50% { transform: translateY(50vh) rotate(180deg) translateX(var(--swing-x)); }
+          100% { transform: translateY(120vh) rotate(720deg) translateX(0); opacity: 0; }
         }
-        .animate-confetti-fall {
-          animation: confetti-fall cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-        }
+        .animate-confetti-fall { animation: confetti-fall cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
       `}</style>
     </div>
   );
 };
+
+interface HabitTrackerProps {
+  habits: Habit[];
+  onToggleHabit: (id: string) => void;
+  onAddHabit: (title: string, category: TaskCategory) => void;
+  onDeleteHabit: (id: string) => void;
+  onBreakHabit: (id: string) => void;
+}
 
 const HabitTracker: React.FC<HabitTrackerProps> = ({ habits, onToggleHabit, onAddHabit, onDeleteHabit, onBreakHabit }) => {
   const [newHabitTitle, setNewHabitTitle] = useState('');
@@ -79,17 +67,16 @@ const HabitTracker: React.FC<HabitTrackerProps> = ({ habits, onToggleHabit, onAd
     if (isToday) return;
 
     onToggleHabit(habit.id);
-    setCompletionMessage(`You have completed "${habit.title}" for ${habit.streak + 1} days!`);
+    setCompletionMessage(`YOU MASTERED "${habit.title}"`);
     setShowConfetti(true);
     setIsExiting(false);
     
-    // Clear after 3.5s to allow for full exit animation
-    const exitTimer = setTimeout(() => setIsExiting(true), 3000);
+    const exitTimer = setTimeout(() => setIsExiting(true), 2800);
     const clearTimer = setTimeout(() => {
       setShowConfetti(false);
       setCompletionMessage(null);
       setIsExiting(false);
-    }, 3600);
+    }, 3500);
 
     return () => {
       clearTimeout(exitTimer);
@@ -105,224 +92,169 @@ const HabitTracker: React.FC<HabitTrackerProps> = ({ habits, onToggleHabit, onAd
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 relative">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000 relative pb-20">
       {showConfetti && <Confetti />}
       
-      {/* Enhanced Completion Overlay */}
+      {/* Victory Flash Overlay */}
       {completionMessage && (
-        <div className={`fixed inset-0 z-[10000] flex items-center justify-center p-4 transition-all duration-700 ease-in-out ${isExiting ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'}`}>
-          {/* Backdrop Blur with smooth fade */}
-          <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-500" />
-          
-          <div className="relative bg-slate-900 border-2 border-yellow-500/40 p-10 md:p-16 rounded-[3rem] shadow-[0_0_100px_rgba(234,179,8,0.25)] text-center animate-in zoom-in-95 slide-in-from-bottom-12 duration-700 overflow-hidden">
-            {/* Glossy Reflection Effect */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none" />
-            
-            <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-yellow-500 p-6 rounded-full shadow-[0_0_40px_rgba(234,179,8,0.6)] border-4 border-slate-900 animate-bounce">
-              <Trophy size={52} className="text-slate-950" />
-            </div>
-            
-            <div className="mt-8 space-y-6">
-              <div className="space-y-2 animate-in slide-in-from-top-4 duration-500 delay-200 fill-mode-both">
-                <h3 className="text-2xl font-black text-yellow-500/80 uppercase tracking-widest italic pixel-font text-[10px]">Evo-Chain Progress!</h3>
-                <div className="h-1 w-32 bg-gradient-to-r from-transparent via-yellow-500 to-transparent mx-auto rounded-full" />
+        <div className={`fixed inset-0 z-[99999] flex items-center justify-center p-4 transition-all duration-700 ${isExiting ? 'opacity-0 scale-125 pointer-events-none' : 'opacity-100 scale-100'}`}>
+          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-3xl animate-in fade-in duration-500" />
+          <div className="relative p-12 md:p-24 text-center max-w-4xl w-full">
+            <div className="absolute inset-0 bg-yellow-500/10 blur-[150px] animate-pulse" />
+            <div className="relative z-10 space-y-8">
+              <div className="p-10 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-[3rem] shadow-[0_0_80px_rgba(234,179,8,0.6)] border-4 border-white/20 mx-auto w-fit mb-12">
+                <Trophy size={80} className="text-slate-950 animate-bounce" />
               </div>
-              
-              <h4 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-yellow-200 to-yellow-500 uppercase tracking-tighter drop-shadow-lg animate-in fade-in zoom-in-75 duration-700 delay-300 fill-mode-both">
-                Quest Cleared
-              </h4>
-              
-              <p className="text-2xl text-slate-100 font-bold max-w-sm mx-auto leading-tight animate-in slide-in-from-bottom-4 fade-in duration-500 delay-500 fill-mode-both">
-                {completionMessage}
-              </p>
-              
-              <div className="pt-6 flex items-center justify-center gap-4 animate-in fade-in duration-1000 delay-700 fill-mode-both">
-                <div className="h-px w-12 bg-slate-800" />
-                <div className="flex items-center gap-2">
-                  <Sparkles className="text-yellow-500 animate-pulse" size={24} />
-                  <span className="text-sm font-black text-yellow-500 uppercase tracking-[0.3em] drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">
-                    +50 XP | +10 GOLD
-                  </span>
-                  <Sparkles className="text-yellow-500 animate-pulse" size={24} />
-                </div>
-                <div className="h-px w-12 bg-slate-800" />
+              <h2 className="text-5xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-yellow-200 to-yellow-500 uppercase tracking-tighter drop-shadow-2xl italic leading-none">{completionMessage}</h2>
+              <div className="flex items-center justify-center gap-6 pt-10">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent to-yellow-500/50" />
+                <span className="text-2xl font-black text-yellow-500 uppercase tracking-[0.4em] drop-shadow-lg">+50 XP | +25 GP</span>
+                <div className="h-px flex-1 bg-gradient-to-l from-transparent to-yellow-500/50" />
               </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-2">
         <div>
-          <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic">Evolution Chamber</h2>
-          <p className="text-slate-400 text-sm font-bold flex items-center gap-2">
-            <Sparkles size={16} className="text-blue-400 animate-pulse" />
-            Stay disciplined for 21 days to forge a Legendary Passive Skill.
-          </p>
+          <h2 className="text-4xl md:text-6xl font-black text-white uppercase tracking-tighter italic leading-none">The Aura Forge</h2>
+          <div className="flex items-center gap-3 mt-4">
+            <Sparkles size={20} className="text-blue-400 animate-pulse" /> 
+            <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.4em] opacity-80">Forging permanent character traits in the void.</p>
+          </div>
         </div>
       </div>
 
-      {/* Habit Scribe */}
-      <form onSubmit={handleAddSubmit} className="rpg-card p-8 rounded-3xl border-slate-800 bg-gradient-to-r from-slate-900 via-indigo-950/20 to-slate-900 shadow-2xl relative group overflow-hidden">
-        <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-        <h3 className="flex items-center gap-2 text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-6 relative z-10">
-          <Plus size={18} className="animate-pulse" />
-          Scribe New Passive Skill
+      <form onSubmit={handleAddSubmit} className="rpg-card p-8 md:p-12 rounded-[3rem] border-blue-500/10 bg-slate-900/30 shadow-3xl group relative overflow-hidden ring-1 ring-white/5 mx-2">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-indigo-500/5" />
+        <h3 className="flex items-center gap-3 text-[11px] font-black text-blue-400 uppercase tracking-[0.3em] mb-10 relative z-10">
+          <Plus size={24} className="animate-pulse" /> Scribe New Passive Ritual
         </h3>
-        <div className="flex flex-col sm:flex-row gap-4 relative z-10">
+        <div className="flex flex-col md:flex-row gap-6 relative z-10">
           <input 
             type="text" 
-            placeholder="E.g. Morning Meditation, 10k Steps Ritual..."
-            value={newHabitTitle}
-            onChange={e => setNewHabitTitle(e.target.value)}
-            className="flex-1 bg-slate-950 border-2 border-slate-800 rounded-2xl px-6 py-4 text-white text-base focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-600"
+            placeholder="Name your ritual (e.g. Shadow Yoga)..." 
+            value={newHabitTitle} 
+            onChange={e => setNewHabitTitle(e.target.value)} 
+            className="flex-1 bg-slate-950/80 border-2 border-slate-800 rounded-2xl px-8 py-5 text-white text-lg focus:border-blue-500 shadow-inner outline-none transition-all placeholder:text-slate-700 placeholder:italic" 
           />
-          <button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-xl shadow-blue-900/30 active:scale-95 transition-all hover:translate-y-[-2px]">
-            Forge Skill
-          </button>
+          <button type="submit" className="bg-gradient-to-br from-blue-600 to-indigo-800 hover:scale-105 hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 whitespace-nowrap">Ignite Forge</button>
         </div>
       </form>
 
-      {/* Habits List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 md:gap-12 px-2">
         {habits.map((habit, idx) => {
-          const isToday = habit.lastCompleted && new Date(habit.lastCompleted).toDateString() === new Date().toDateString();
+          const now = new Date();
+          const lastDate = habit.lastCompleted ? new Date(habit.lastCompleted) : null;
+          const isToday = lastDate && lastDate.toDateString() === new Date().toDateString();
+          const diffInMs = lastDate ? now.getTime() - lastDate.getTime() : 0;
+          const diffInDays = lastDate ? Math.floor(diffInMs / (1000 * 60 * 60 * 24)) : 0;
+          
+          const isGracePeriod = lastDate && !isToday && diffInDays === 1;
+          const isShattered = lastDate && !isToday && diffInDays >= 2;
           const progress = (habit.streak / 21) * 100;
           
           return (
             <div 
-              key={habit.id}
-              style={{ animationDelay: `${idx * 100}ms` }}
-              className={`rpg-card rounded-[2rem] p-8 border-slate-800 transition-all duration-500 group relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 ${
-                habit.isFormed ? 'border-yellow-500/50 shadow-[0_0_40px_rgba(234,179,8,0.15)]' : 'hover:border-slate-700 shadow-xl'
-              }`}
-            >
-              {habit.isFormed && (
-                <div className="absolute top-0 right-0 p-3 bg-yellow-500 text-slate-950 font-black text-[9px] uppercase tracking-widest rounded-bl-2xl shadow-lg z-10 animate-pulse">
-                  Legendary Skill
-                </div>
-              )}
-
-              <div className="flex justify-between items-start mb-8">
-                <div className="flex items-center gap-6">
-                  <div className={`p-5 rounded-[1.25rem] bg-slate-800 border-2 transition-all duration-700 group-hover:scale-110 group-hover:rotate-3 ${
-                    isToday ? 'border-emerald-500 bg-emerald-500/10 shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'border-slate-700'
+              key={habit.id} 
+              className={`rpg-card rounded-[3.5rem] p-8 md:p-12 border-slate-800 transition-all duration-700 group relative overflow-hidden ${
+              habit.isFormed ? 'border-yellow-500/40 shadow-[0_0_80px_rgba(234,179,8,0.15)]' : 
+              isShattered ? 'border-red-500/40 bg-red-950/10' : 
+              isToday ? 'border-emerald-500/30' : 'hover:border-slate-600'
+            }`}>
+              {/* Dynamic Aura Gradient */}
+              <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-1000 ${
+                habit.isFormed ? 'bg-yellow-500' : isShattered ? 'bg-red-500' : 'bg-blue-500'
+              }`} />
+              
+              <div className="flex justify-between items-start mb-12 gap-6 relative z-10">
+                <div className="flex items-center gap-6 min-w-0 flex-1">
+                  <div className={`p-5 rounded-[2rem] transition-all duration-700 group-hover:scale-110 shadow-2xl shrink-0 ${
+                    isToday ? 'bg-emerald-600 text-white shadow-emerald-900/50' : 
+                    isShattered ? 'bg-slate-900 text-red-400 border border-red-500/30' : 
+                    'bg-slate-900 text-slate-500 border border-white/10'
                   }`}>
                     {CATEGORY_ICONS[habit.category]}
                   </div>
-                  <div>
-                    <h3 className={`text-xl font-black uppercase tracking-tight transition-colors duration-500 ${isToday ? 'text-emerald-400' : 'text-white'}`}>
-                      {habit.title}
-                    </h3>
-                    <div className="flex items-center gap-3 mt-2">
-                      <Flame size={14} className={`transition-all duration-500 ${habit.streak > 0 ? 'text-orange-500 animate-pulse' : 'text-slate-600'}`} />
-                      <span className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em]">
-                        {habit.streak} Day Chain
+                  <div className="min-w-0 flex-1">
+                    <h3 className={`text-2xl md:text-3xl font-black uppercase tracking-tight leading-none mb-3 truncate ${isToday ? 'text-emerald-400 text-glow' : isShattered ? 'text-red-400' : 'text-white'}`}>{habit.title}</h3>
+                    <div className="flex items-center gap-3">
+                      <Flame size={18} className={`${habit.streak > 0 ? 'text-orange-500 animate-pulse' : 'text-slate-700'}`} />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                        Streak Intensity: {habit.streak} Nodes
                       </span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex gap-3">
-                  {!isToday && !habit.isFormed && habit.streak > 0 && (
-                    <button 
-                      onClick={() => onBreakHabit(habit.id)}
-                      className="p-4 rounded-2xl border border-red-900/40 bg-red-950/10 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-md active:scale-90"
-                      title="Shatter Chain"
-                    >
-                      <ZapOff size={26} />
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => handleComplete(habit)}
-                    disabled={isToday}
-                    className={`p-4 rounded-2xl transition-all border-2 group/btn ${
-                      isToday 
-                        ? 'bg-emerald-600 border-emerald-400 text-white cursor-default' 
-                        : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-blue-500 hover:bg-blue-600/10 hover:text-white active:scale-90 shadow-xl'
-                    }`}
-                  >
-                    {isToday ? <CheckCircle2 size={26} /> : <Circle size={26} className="group-hover/btn:scale-110 transition-transform duration-300" />}
-                  </button>
-                </div>
+                <button 
+                  onClick={() => handleComplete(habit)} 
+                  disabled={isToday} 
+                  className={`p-4 rounded-3xl transition-all border-4 shrink-0 active:scale-90 ${
+                    isToday 
+                      ? 'bg-emerald-600 border-emerald-400 text-white cursor-default' 
+                      : isShattered ? 'bg-slate-950 border-red-500/40 text-red-500 hover:bg-red-600 hover:text-white' 
+                      : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-blue-500 hover:text-white'
+                  }`}
+                >
+                  {isToday ? <CheckCircle2 size={32} /> : <Circle size={32} />}
+                </button>
               </div>
 
-              {/* Progress 0/21 */}
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
-                  <span className="flex items-center gap-2">
-                    Evolutionary Rank <Sparkles size={10} className={progress > 50 ? 'text-blue-400 animate-spin-slow' : ''} />
-                  </span>
-                  <span className={habit.isFormed ? 'text-yellow-500' : ''}>{habit.streak} / 21 Cycles</span>
+              <div className="space-y-6 relative z-10">
+                <div className="flex justify-between items-end text-[10px] font-black uppercase tracking-[0.4em]">
+                  <span className="text-slate-500">Synaptic Encoding</span>
+                  <span className={habit.isFormed ? 'text-yellow-500' : 'text-slate-400'}>{habit.streak}/21</span>
                 </div>
-                <div className="h-4 bg-slate-950 rounded-full border-2 border-slate-900 overflow-hidden shadow-inner p-0.5">
+                <div className="h-4 bg-slate-950 rounded-full border border-white/10 p-0.5 overflow-hidden shadow-inner">
                   <div 
-                    className={`h-full transition-all duration-1500 ease-out rounded-full ${
-                      habit.isFormed ? 'bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600' : 'bg-gradient-to-r from-blue-700 via-blue-500 to-cyan-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]'
-                    }`}
+                    className={`h-full rounded-full transition-all duration-1500 ease-out relative ${
+                      habit.isFormed ? 'bg-gradient-to-r from-yellow-700 via-yellow-400 to-amber-600' : 
+                      isShattered ? 'bg-red-900' : 'bg-gradient-to-r from-blue-800 to-cyan-500'
+                    }`} 
                     style={{ width: `${Math.min(100, progress)}%` }}
                   >
-                    <div className="w-full h-full bg-gradient-to-b from-white/20 to-transparent animate-pulse" />
+                    <div className="absolute inset-0 bg-white/20 animate-pulse" />
                   </div>
                 </div>
                 
-                {/* Visual Pips - Smaller and cleaner */}
-                <div className="flex justify-between gap-1 pt-3">
+                {/* Visual Bead Meter */}
+                <div className="flex justify-between gap-1.5 pt-2">
                   {[...Array(21)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`h-1.5 flex-1 rounded-full transition-all duration-700 ${
-                        i < habit.streak 
-                          ? habit.isFormed ? 'bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.7)]' : 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.7)]'
-                          : 'bg-slate-900'
-                      }`}
-                    />
+                    <div key={i} className={`h-2 flex-1 rounded-sm transition-all duration-500 ${
+                      i < habit.streak 
+                        ? habit.isFormed ? 'bg-yellow-400 shadow-[0_0_8px_rgba(234,179,8,1)]' : 
+                          isShattered ? 'bg-red-600' : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,1)]'
+                        : 'bg-slate-950 border border-white/5'
+                    }`} />
                   ))}
                 </div>
               </div>
 
-              <button 
-                onClick={() => onDeleteHabit(habit.id)}
-                className="absolute bottom-3 right-3 p-2 text-slate-800 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all hover:scale-125"
-              >
-                <Trash2 size={16} />
-              </button>
+              <div className="absolute bottom-6 right-8 flex gap-4 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
+                {!isToday && !habit.isFormed && habit.streak > 0 && (
+                  <button onClick={() => onBreakHabit(habit.id)} className="p-3 rounded-2xl bg-red-900/20 text-red-500 border border-red-500/20 hover:bg-red-600 hover:text-white transition-all"><ZapOff size={18} /></button>
+                )}
+                <button onClick={() => onDeleteHabit(habit.id)} className="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-slate-600 hover:text-red-500 transition-all"><Trash2 size={18} /></button>
+              </div>
             </div>
           );
         })}
       </div>
 
-      {habits.length === 0 && (
-        <div className="py-32 text-center rpg-card border-dashed border-2 border-slate-800 rounded-[3rem] opacity-30 animate-pulse">
-           <ScrollText size={64} className="mx-auto mb-6 text-slate-600" />
-           <p className="pixel-font text-[12px] tracking-widest text-slate-500">Evolution chamber dormant...</p>
+      {/* Rules of the Void */}
+      <div className="mx-2 p-10 bg-slate-950/60 border-2 border-white/5 rounded-[3.5rem] shadow-3xl relative overflow-hidden text-center md:text-left flex flex-col md:flex-row items-center gap-10">
+        <div className="p-6 bg-blue-500/10 rounded-[2.5rem] border border-blue-500/20 text-blue-400 shrink-0">
+          <ShieldCheck size={48} />
         </div>
-      )}
-
-      <div className="p-8 bg-slate-900/60 border-2 border-slate-800 rounded-[2.5rem] flex flex-col sm:flex-row items-center gap-8 shadow-2xl backdrop-blur-md">
-        <div className="bg-blue-600/10 p-6 rounded-[1.5rem] border border-blue-500/20 shadow-inner">
-          <Info className="text-blue-400" size={40} />
-        </div>
-        <div className="text-center sm:text-left">
-          <h4 className="text-xl font-black text-white uppercase tracking-tighter mb-2">Lore of Perpetual Growth</h4>
-          <p className="text-base text-slate-400 leading-relaxed max-w-2xl">
-            Legends tell of the <span className="text-blue-400 font-bold underline decoration-blue-500/30 decoration-2 underline-offset-4">21-Day Ritual</span>. 
-            Maintain the chain to bake discipline into your mental code. 
-            A completed evolution unlocks a <span className="text-yellow-500 font-bold drop-shadow-[0_0_15px_rgba(234,179,8,0.4)]">Legendary +1000 XP Bonus</span>. 
-            Use <span className="text-red-400 font-bold">Shatter</span> only if the vow was truly broken.
+        <div className="space-y-3">
+          <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic">Vows of the Forge</h4>
+          <p className="text-slate-400 text-sm leading-relaxed max-w-4xl font-medium">
+            Mastery is found in relentless repetition. A ritual takes <span className="text-blue-400 font-black">21 cycles</span> to manifest as a permanent passive skill. Missing 24 hours triggers the <span className="text-amber-500 font-bold">Vow Tax</span> (-50 XP/Gold), but missing 48 hours <span className="text-red-500 font-black italic shadow-red-500/20">shatters the chain</span> entirely. Safeguard your progress.
           </p>
         </div>
       </div>
-      
-      <style>{`
-        .animate-spin-slow {
-          animation: spin 10s linear infinite;
-        }
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 };

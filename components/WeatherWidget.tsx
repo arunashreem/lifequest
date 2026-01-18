@@ -1,18 +1,34 @@
 
 import React, { useState, useEffect } from 'react';
-import { Sun, Cloud, CloudRain, CloudLightning, Loader2, ExternalLink, ThermometerSun, Droplets, Wind, Activity, ArrowDown, ArrowUp } from 'lucide-react';
+import { Sun, Cloud, CloudRain, CloudLightning, Loader2, ExternalLink, ThermometerSun, Droplets, Wind, Activity, ArrowDown, ArrowUp, AlertCircle, RefreshCw } from 'lucide-react';
 import { getWeatherForecast } from '../services/gemini';
 
 const WeatherWidget: React.FC = () => {
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [errorType, setErrorType] = useState<'NONE' | 'QUOTA' | 'GENERIC'>('NONE');
+
+  const fetchWeather = async (force = false) => {
+    setLoading(true);
+    setErrorType('NONE');
+    const data = await getWeatherForecast(force);
+    
+    if (data?.error === 'QUOTA_REACHED') {
+      setErrorType('QUOTA');
+      // Try to fallback to any existing cached data even if expired
+      const cached = localStorage.getItem('lifequest_weather_v2');
+      if (cached) {
+        setWeather(JSON.parse(cached).data);
+      }
+    } else if (!data) {
+      setErrorType('GENERIC');
+    } else {
+      setWeather(data);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const fetchWeather = async () => {
-      const data = await getWeatherForecast();
-      setWeather(data);
-      setLoading(false);
-    };
     fetchWeather();
   }, []);
 
@@ -27,7 +43,7 @@ const WeatherWidget: React.FC = () => {
     }
   };
 
-  if (loading) {
+  if (loading && !weather) {
     return (
       <div className="rpg-card p-8 rounded-[2.5rem] border-slate-800 flex flex-col items-center justify-center min-h-[300px] opacity-50 space-y-4">
         <div className="relative">
@@ -39,10 +55,31 @@ const WeatherWidget: React.FC = () => {
     );
   }
 
+  if (errorType === 'QUOTA' && !weather) {
+    return (
+      <div className="rpg-card p-8 rounded-[2.5rem] border-amber-500/30 bg-amber-950/10 flex flex-col items-center justify-center min-h-[300px] space-y-6 text-center">
+        <div className="p-4 bg-amber-500/20 rounded-full border border-amber-500/40">
+          <AlertCircle className="text-amber-500" size={40} />
+        </div>
+        <div>
+          <h3 className="text-lg font-black text-white uppercase tracking-tighter italic">Chronos Link Exhausted</h3>
+          <p className="text-slate-400 text-xs mt-2 max-w-[240px]">The Oracle's atmospheric sensors have reached their limit. Try again in 30 minutes.</p>
+        </div>
+        <button 
+          onClick={() => fetchWeather(true)}
+          className="flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all"
+        >
+          <RefreshCw size={14} /> Retry Sync
+        </button>
+      </div>
+    );
+  }
+
+  if (!weather && errorType !== 'NONE') return null;
   if (!weather) return null;
 
   return (
-    <div className="rpg-card rounded-[2.5rem] border-2 border-blue-500/20 bg-slate-950/40 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] animate-in fade-in zoom-in duration-700 relative overflow-hidden group">
+    <div className={`rpg-card rounded-[2.5rem] border-2 ${errorType === 'QUOTA' ? 'border-amber-500/40' : 'border-blue-500/20'} bg-slate-950/40 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.7)] animate-in fade-in zoom-in duration-700 relative overflow-hidden group`}>
       {/* Background Ambience */}
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,_rgba(59,130,246,0.08),_transparent_70%)] pointer-events-none" />
       <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-blue-600/5 blur-[100px] pointer-events-none group-hover:bg-blue-600/10 transition-all duration-1000" />
@@ -57,20 +94,30 @@ const WeatherWidget: React.FC = () => {
             <div>
               <h3 className="text-sm font-black text-blue-400 uppercase tracking-[0.3em] italic leading-none">Atmospheric Scanner</h3>
               <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mt-1.5 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Satellite Sync: Sydney / Kingsford Smith
+                <span className={`w-1.5 h-1.5 rounded-full ${errorType === 'QUOTA' ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`} />
+                {errorType === 'QUOTA' ? 'Offline: Using Cached Intel' : 'Satellite Sync: Sydney'}
               </p>
             </div>
           </div>
-          <a 
-            href="https://www.bom.gov.au/location/australia/new-south-wales/metropolitan/bnsw_pt131-sydney"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2.5 px-4 py-2.5 bg-slate-900/60 hover:bg-blue-600/20 rounded-xl border border-white/5 text-[9px] font-black text-slate-500 hover:text-blue-400 transition-all uppercase tracking-widest group/link"
-          >
-            Live BOM Trace
-            <ExternalLink size={12} className="group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-          </a>
+          <div className="flex gap-2">
+            {errorType === 'QUOTA' && (
+              <button 
+                onClick={() => fetchWeather(true)}
+                className="flex items-center gap-2 px-3 py-2.5 bg-amber-600/20 hover:bg-amber-600/40 rounded-xl border border-amber-500/20 text-[9px] font-black text-amber-500 transition-all uppercase tracking-widest"
+              >
+                <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+              </button>
+            )}
+            <a 
+              href="https://www.bom.gov.au/location/australia/new-south-wales/metropolitan/bnsw_pt131-sydney"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 px-4 py-2.5 bg-slate-900/60 hover:bg-blue-600/20 rounded-xl border border-white/5 text-[9px] font-black text-slate-500 hover:text-blue-400 transition-all uppercase tracking-widest group/link"
+            >
+              Live BOM Trace
+              <ExternalLink size={12} className="group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+            </a>
+          </div>
         </div>
 
         {/* Primary Weather Cluster */}
@@ -146,8 +193,10 @@ const WeatherWidget: React.FC = () => {
             <div className="h-0.5 w-12 bg-gradient-to-r from-blue-500 to-transparent rounded-full opacity-30" />
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-1 h-1 rounded-full bg-blue-500 animate-ping" />
-            <span className="text-[8px] font-black text-blue-500/60 uppercase tracking-widest">Real-time Stream</span>
+            <div className={`w-1 h-1 rounded-full ${errorType === 'QUOTA' ? 'bg-amber-500' : 'bg-blue-500'} animate-ping`} />
+            <span className={`text-[8px] font-black ${errorType === 'QUOTA' ? 'text-amber-500/60' : 'text-blue-500/60'} uppercase tracking-widest`}>
+              {errorType === 'QUOTA' ? 'Cached Stream' : 'Real-time Stream'}
+            </span>
           </div>
         </div>
         
@@ -192,7 +241,8 @@ const WeatherWidget: React.FC = () => {
         </div>
         <div className="flex items-center gap-4 text-[9px] font-black text-slate-600 uppercase tracking-[0.2em]">
           <span className="flex items-center gap-2">
-            <Activity size={10} className="text-emerald-500" /> Sensor Network: Nominal
+            <Activity size={10} className={errorType === 'QUOTA' ? 'text-amber-500' : 'text-emerald-500'} /> 
+            Sensor Network: {errorType === 'QUOTA' ? 'Limited' : 'Nominal'}
           </span>
           <div className="h-3 w-px bg-slate-800" />
           <span className="text-slate-400 italic">"Plan your raids accordingly."</span>
