@@ -19,7 +19,7 @@ import Profile from './components/Profile';
 import CurrentTimeWidget from './components/CurrentTimeWidget';
 import Scriptorium from './components/Scriptorium';
 import { Task, UserStats, TaskCategory, Difficulty, Reward, TimetableSlot, AssessmentMap, Habit, Book, Countdown, Resource, ContentIdea, Milestone } from './types';
-import { INITIAL_STATS, XP_VALUES, DEFAULT_REWARDS, REWARD_ICONS, INITIAL_HABITS, INITIAL_BOOKS, INITIAL_TIMETABLE } from './constants';
+import { INITIAL_STATS, XP_VALUES, DEFAULT_REWARDS, REWARD_ICONS, INITIAL_HABITS, INITIAL_BOOKS, INITIAL_TIMETABLE, INITIAL_ASSESSMENTS } from './constants';
 import { Plus, Sparkles, Wand2, Loader2, ScrollText, Trophy, Clock, ShieldCheck, Zap, RefreshCw, Trash2, Hammer, RotateCcw, Medal, Timer, Calendar, X, Rocket } from 'lucide-react';
 import { generateDailyQuests, getAIAdvice } from './services/gemini';
 
@@ -78,7 +78,7 @@ const App: React.FC = () => {
   const [resources, setResources] = useState<Resource[]>([]);
   const [ideas, setIdeas] = useState<ContentIdea[]>([]);
   const [timetable, setTimetable] = useState<Record<string, Record<string, TimetableSlot[]>>>(INITIAL_TIMETABLE);
-  const [assessments, setAssessments] = useState<AssessmentMap>({});
+  const [assessments, setAssessments] = useState<AssessmentMap>(INITIAL_ASSESSMENTS);
   const [countdowns, setCountdowns] = useState<Countdown[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -251,17 +251,6 @@ const App: React.FC = () => {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, subTasks: t.subTasks?.map(st => st.id === subTaskId ? { ...st, completed: !st.completed } : st) } : t));
   };
 
-  const handleAddTime = (taskId: string, mins: number) => {
-    setTasks(prev => prev.map(t => {
-      if (t.id === taskId) {
-        const newTime = (t.timeSpent || 0) + mins;
-        if (newTime % 30 === 0 && newTime > 0) handleManualXpAward(100, "Grind milestone reached!", t.category);
-        return { ...t, timeSpent: newTime };
-      }
-      return t;
-    }));
-  };
-
   const handleUpdateStats = (updates: Partial<UserStats>) => setStats(prev => ({ ...prev, ...updates }));
   const handleResetProgress = () => { setStats(INITIAL_STATS); setTasks([]); setMilestones([]); setTimetable(INITIAL_TIMETABLE); setActiveTab('dashboard'); localStorage.removeItem('lifequest_state_v24'); };
 
@@ -271,6 +260,22 @@ const App: React.FC = () => {
         handleManualXpAward(t.xpValue, `Quest Cleared: ${t.title}`, t.category);
         if (blackoutTask?.id === id) setBlackoutTask(null);
         return { ...t, completed: true };
+      }
+      return t;
+    }));
+  };
+
+  const handleAddTime = (taskId: string, mins: number) => {
+    setTasks(prev => prev.map(t => {
+      if (t.id === taskId) {
+        const currentMins = t.timeSpent || 0;
+        const nextMins = currentMins + mins;
+        
+        if (Math.floor(nextMins / 30) > Math.floor(currentMins / 30)) {
+          handleManualXpAward(25, `Grind Milestone: 30m extra effort on ${t.title}`, t.category);
+        }
+        
+        return { ...t, timeSpent: nextMins };
       }
       return t;
     }));
@@ -327,7 +332,6 @@ const App: React.FC = () => {
     setIsCreatingCountdown(false);
   };
 
-  // Add missing book handlers
   const handleAddBook = (title: string, author: string) => {
     setBooks([...books, { id: Math.random().toString(36).substr(2, 9), title, author, completed: false }]);
   };
@@ -340,7 +344,6 @@ const App: React.FC = () => {
     setStats(s => ({ ...s, gold: s.gold + gold }));
   };
 
-  // Add missing reward handlers
   const handlePurchaseReward = (reward: Reward) => {
     if (stats.gold >= reward.cost) {
       setStats(s => ({ ...s, gold: s.gold - reward.cost }));
@@ -363,67 +366,83 @@ const App: React.FC = () => {
   const renderDashboard = () => {
     const siegeDate = new Date("2026-02-02");
     const showSiege = new Date() < siegeDate;
+    
     return (
       <div className="space-y-8 animate-in fade-in duration-500">
-        {/* Switched to a 12-column grid to give the stats box a bit more width than 1/3 */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* Stats & Sidebars - now takes 5/12 columns (~42%) */}
-          <div className="lg:col-span-5 space-y-10">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-stretch">
+          <div className="xl:col-span-5 w-full flex flex-col h-full">
             <CharacterStats stats={stats} />
-            <SideQuestList tasks={tasks} onComplete={handleCompleteTask} />
-            <div className="rpg-card rounded-[3rem] p-10 bg-slate-950/40 relative group overflow-hidden">
+          </div>
+          
+          <div className="xl:col-span-4 flex flex-col gap-8 w-full h-full">
+            {showSiege && <CountdownWidget targetDate="2026-02-02" isStatic={true} />}
+            {countdowns.map(cd => (
+              <CountdownWidget 
+                key={cd.id} 
+                title={cd.title} 
+                targetDate={cd.targetDate} 
+                color={cd.color} 
+                onDelete={() => setCountdowns(countdowns.filter(c => c.id !== cd.id))} 
+              />
+            ))}
+            
+            <div className="rpg-card rounded-[2.5rem] p-8 bg-slate-950/40 relative group overflow-hidden border border-white/5 min-h-[220px] flex items-center justify-center flex-1">
                {!isCreatingCountdown ? (
-                 <div className="flex flex-col gap-6 items-center text-center">
-                   <div className="p-5 bg-gradient-to-br from-blue-500 to-indigo-700 rounded-3xl shadow-2xl border border-white/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
-                     <Timer className="text-white" size={40} />
+                 <div className="flex flex-col gap-5 items-center text-center">
+                   <div className="p-4 bg-gradient-to-br from-blue-600/20 to-indigo-700/20 rounded-2xl border border-white/10 group-hover:scale-105 transition-all">
+                     <Timer className="text-blue-400 opacity-60" size={36} />
                    </div>
-                   <button onClick={() => setIsCreatingCountdown(true)} className="w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-800 rounded-2xl text-[11px] font-black text-white uppercase tracking-widest transition-all hover:-translate-y-1">Initiate Marker</button>
+                   <button 
+                    onClick={() => setIsCreatingCountdown(true)} 
+                    className="px-8 py-3 bg-slate-900 border border-white/10 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest transition-all hover:bg-blue-600 hover:text-white"
+                   >
+                    Forge Temporal Node
+                   </button>
                  </div>
                ) : (
-                 <form onSubmit={handleCreateCountdown} className="space-y-6">
-                    <input type="text" placeholder="Quest Title" value={newCountdownTitle} onChange={e => setNewCountdownTitle(e.target.value)} className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none" />
-                    <input type="date" value={newCountdownDate} onChange={e => setNewCountdownDate(e.target.value)} className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-5 py-4 text-white focus:border-blue-500 outline-none" />
-                    <div className="flex gap-4">
-                      <button type="button" onClick={() => setIsCreatingCountdown(false)} className="flex-1 py-4 bg-slate-900 text-slate-500 text-[11px] font-black uppercase rounded-xl">Abort</button>
-                      <button type="submit" className="flex-[2] py-4 bg-blue-600 text-white text-[11px] font-black uppercase rounded-xl">Forge</button>
+                 <form onSubmit={handleCreateCountdown} className="space-y-4 w-full">
+                    <input type="text" placeholder="Quest Title" value={newCountdownTitle} onChange={e => setNewCountdownTitle(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none" />
+                    <input type="date" value={newCountdownDate} onChange={e => setNewCountdownDate(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none" />
+                    <div className="flex gap-3">
+                      <button type="button" onClick={() => setIsCreatingCountdown(false)} className="flex-1 py-3 bg-slate-900 text-slate-500 text-[10px] font-black uppercase rounded-lg">Abort</button>
+                      <button type="submit" className="flex-1 py-3 bg-blue-600 text-white text-[10px] font-black uppercase rounded-lg">Seal</button>
                     </div>
                  </form>
                )}
             </div>
           </div>
-          
-          {/* Main Quest Area - now takes 7/12 columns (~58%) */}
+
+          <div className="xl:col-span-3 w-full h-full flex flex-col">
+            <WeatherWidget />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-7 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {showSiege && <CountdownWidget targetDate="2026-02-02" isStatic={true} />}
-              {countdowns.map(cd => <CountdownWidget key={cd.id} title={cd.title} targetDate={cd.targetDate} color={cd.color} onDelete={() => setCountdowns(countdowns.filter(c => c.id !== cd.id))} />)}
-              <WeatherWidget />
-            </div>
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4">
-              <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic leading-tight">Active Battlegrounds</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
+              <h2 className="text-3xl font-black text-white uppercase italic tracking-tighter">Active Battlegrounds</h2>
               <button 
                 onClick={async () => { setIsGenerating(true); const q = await generateDailyQuests(stats); setTasks([...q.map((t:any)=>({...t, id:Math.random().toString(36).substr(2,9), completed:false, xpValue:150, goldValue:75, dueDate:new Date().toISOString()})), ...tasks]); setIsGenerating(false); }} 
-                className="flex items-center justify-center gap-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest w-full sm:w-auto shadow-xl shadow-purple-950/20 active:scale-95 transition-all"
+                className="flex items-center justify-center gap-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl transition-all hover:scale-105 active:scale-95"
               >
                 {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Wand2 size={16} />} Summon Quests
               </button>
             </div>
 
-            <form onSubmit={addTask} className="px-4 relative flex items-center">
+            <form onSubmit={addTask} className="px-2 relative flex items-center">
               <input 
                 type="text" 
                 value={newTaskTitle} 
                 onChange={(e) => setNewTaskTitle(e.target.value)} 
                 placeholder="Declare a new objective..." 
-                className="w-full bg-slate-950 border-2 border-slate-800 rounded-2xl px-6 py-5 text-white focus:border-blue-500 outline-none pr-16 shadow-inner" 
+                className="w-full bg-slate-950/50 border-2 border-slate-800/50 rounded-2xl px-6 py-5 text-white focus:border-blue-500 outline-none pr-16 shadow-inner text-lg placeholder:text-slate-700" 
               />
-              <button type="submit" className="absolute right-7 bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-500 active:scale-90 transition-all">
+              <button type="submit" className="absolute right-5 bg-blue-600 text-white p-3 rounded-xl hover:bg-blue-500 active:scale-90 transition-all">
                 <Plus size={24} />
               </button>
             </form>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-2">
               {tasks.filter(t => !t.completed && !t.isBoss && !t.isSideQuest).map(task => (
                 <div key={task.id} className="relative group">
                   <QuestCard task={task} onComplete={handleCompleteTask} onDelete={id => setTasks(tasks.filter(t => t.id !== id))} />
@@ -431,7 +450,14 @@ const App: React.FC = () => {
                 </div>
               ))}
             </div>
-            <div className="px-4"><CurrentTimeWidget /></div>
+          </div>
+          
+          <div className="lg:col-span-5 space-y-8">
+            <SideQuestList tasks={tasks} onComplete={handleCompleteTask} />
+          </div>
+
+          <div className="lg:col-span-12 mt-8">
+            <CurrentTimeWidget />
           </div>
         </div>
       </div>
@@ -442,7 +468,6 @@ const App: React.FC = () => {
     <Layout activeTab={activeTab} setActiveTab={setActiveTab} gold={stats.gold}>
       {showConfetti && <Confetti />}
       
-      {/* Blackout Mode Overlay */}
       {blackoutTask && (
         <div className="fixed inset-0 z-[10000] bg-black flex flex-col items-center justify-center p-8 animate-in fade-in duration-1000">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--accent-primary-glow)_0%,_transparent_70%)] opacity-20" />

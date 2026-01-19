@@ -53,7 +53,7 @@ const CountdownWidget: React.FC<CountdownWidgetProps> = ({
 
   if (!timeLeft) {
     return (
-      <div className={`rpg-card rounded-[2.5rem] border-2 border-emerald-500/50 bg-slate-900 p-8 shadow-2xl relative overflow-hidden group min-h-[220px] flex items-center`}>
+      <div className={`rpg-card rounded-[2.5rem] border-2 border-emerald-500/50 bg-slate-900 p-8 shadow-2xl relative overflow-hidden group min-h-[220px] flex items-center w-full`}>
         {onDelete && !isStatic && (
           <button onClick={onDelete} className="absolute top-4 right-4 p-2 text-slate-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity z-20">
             <Trash2 size={16} />
@@ -78,9 +78,9 @@ const CountdownWidget: React.FC<CountdownWidgetProps> = ({
   }
 
   return (
-    <div className={`relative overflow-hidden rpg-card rounded-[2.5rem] border-2 ${colorConfig.border} bg-slate-900 p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] group transition-all duration-500 hover:border-${color}-500/80 min-h-[220px]`}>
+    <div className={`relative overflow-hidden rpg-card rounded-[2.5rem] border-2 ${colorConfig.border} bg-slate-900 p-8 shadow-2xl group transition-all duration-500 hover:border-${color}-500/80 min-h-[220px] w-full`}>
       {/* Background Watermark */}
-      <div className={`absolute top-1/2 right-[-20px] -translate-y-1/2 opacity-[0.02] pointer-events-none group-hover:opacity-10 transition-opacity duration-1000`}>
+      <div className={`absolute top-1/2 right-[-20px] -translate-y-1/2 opacity-[0.02] pointer-events-none group-hover:opacity-08 transition-opacity duration-1000`}>
         <Skull size={240} className={colorConfig.glow} />
       </div>
 
@@ -90,43 +90,43 @@ const CountdownWidget: React.FC<CountdownWidgetProps> = ({
         </button>
       )}
       
-      <div className="flex flex-col gap-6 relative z-10">
-        <div className="flex items-center gap-5">
-          <div className={`p-5 bg-gradient-to-br ${colorConfig.bg} rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.3)] shrink-0 border border-white/10 group-hover:rotate-3 transition-transform`}>
-            <Timer className="text-white" size={40} />
+      <div className="flex flex-col gap-8 relative z-10 h-full">
+        <div className="flex items-center gap-6">
+          <div className={`p-5 bg-gradient-to-br ${colorConfig.bg} rounded-2xl shadow-xl shrink-0 border border-white/10 group-hover:rotate-2 transition-transform`}>
+            <Timer className="text-white" size={32} />
           </div>
           <div className="flex flex-col min-w-0">
-            <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight mb-1 text-glow">{title}</h3>
+            <h3 className="text-2xl font-black text-white uppercase tracking-tight leading-none mb-2 text-glow truncate">{title}</h3>
             <div className="flex items-center gap-2">
               <Zap size={14} className={`${colorConfig.text} fill-current animate-pulse`} />
-              <p className={`${colorConfig.text} text-[10px] font-black uppercase tracking-[0.2em] opacity-80`}>{subtitle}</p>
+              <p className={`${colorConfig.text} text-[10px] font-black uppercase tracking-[0.2em] opacity-80 truncate`}>{subtitle}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-black/60 backdrop-blur-md rounded-3xl p-6 border border-white/5 shadow-inner group-hover:border-white/10 transition-all duration-500">
-          <div className="flex justify-between items-end mb-4 px-2">
-            <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Battle Clock</span>
-            <span className={`flex items-center gap-1.5 text-[9px] font-black ${colorConfig.text} uppercase tracking-widest ${colorConfig.active} px-2 py-0.5 rounded`}>
+        <div className="bg-black/60 backdrop-blur-md rounded-[2rem] p-6 border border-white/5 shadow-inner group-hover:border-white/10 transition-all duration-500 flex-1 flex flex-col justify-center">
+          <div className="flex justify-between items-end mb-4 px-1">
+            <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Battle Clock</span>
+            <span className={`flex items-center gap-1.5 text-[8px] font-black ${colorConfig.text} uppercase tracking-widest ${colorConfig.active} px-2 py-1 rounded-lg`}>
               <Target size={10} /> Active Tracking
             </span>
           </div>
           
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-4 md:gap-8">
             {[
               { label: 'Days', value: timeLeft.days },
               { label: 'Hours', value: timeLeft.hours },
-              { label: 'Minutes', value: timeLeft.minutes },
-              { label: 'Seconds', value: timeLeft.seconds }
+              { label: 'Mins', value: timeLeft.minutes },
+              { label: 'Secs', value: timeLeft.seconds }
             ].map((unit, i) => (
               <div key={i} className="flex flex-col items-center">
                 <div className="flex items-baseline gap-0.5">
-                  <span className="text-2xl md:text-3xl font-black text-white tabular-nums tracking-tighter group-hover:text-white transition-colors">
+                  <span className="text-3xl md:text-4xl lg:text-5xl font-black text-white tabular-nums tracking-tighter transition-colors">
                     {unit.label === 'Days' ? unit.value : String(unit.value).padStart(2, '0')}
                   </span>
                   <span className={`text-[10px] font-black ${colorConfig.text} uppercase mb-1`}>{unit.label[0]}</span>
                 </div>
-                <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">{unit.label}</span>
+                <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] mt-1">{unit.label}</span>
               </div>
             ))}
           </div>
@@ -139,7 +139,6 @@ const CountdownWidget: React.FC<CountdownWidgetProps> = ({
           style={{ width: `${Math.max(5, Math.min(100, (365 - timeLeft.days) / 3.65))}%` }}
         >
           <div className="absolute inset-0 bg-white/10 animate-pulse" />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
         </div>
       </div>
     </div>

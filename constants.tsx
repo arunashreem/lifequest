@@ -18,7 +18,7 @@ import {
   Trash,
   Library
 } from 'lucide-react';
-import { TaskCategory, Difficulty, Reward, Habit, Book, TimetableSlot } from './types';
+import { TaskCategory, Difficulty, Reward, Habit, Book, TimetableSlot, AssessmentMap } from './types';
 
 export const CATEGORY_ICONS: Record<TaskCategory, React.ReactNode> = {
   [TaskCategory.FITNESS]: <Dumbbell className="w-5 h-5 text-red-400" />,
@@ -78,6 +78,36 @@ export const INITIAL_HABITS: Habit[] = [
   { id: 'h7', title: 'Divine Communion: 5m Prayer', streak: 0, lastCompleted: null, isFormed: false, category: TaskCategory.MINDFULNESS, totalCompletions: 0 },
   { id: 'h5', title: 'Digital Fast: No Screens 1hr pre-sleep', streak: 0, lastCompleted: null, isFormed: false, category: TaskCategory.MINDFULNESS, totalCompletions: 0 },
 ];
+
+export const INITIAL_ASSESSMENTS: AssessmentMap = {
+  // Term 1
+  'term1_week4': 'Science – Skills Assessment',
+  'term1_week6': 'CAPA Music – Chord Progression / Science – Skills Assessment',
+  'term1_week7': 'Languages – Part A Listening / Maths – Working Mathematically',
+  'term1_week8': 'HSIE Geog – Topic Test / Science – Skills Assessment',
+  'term1_week9': 'English Writing / PDHPE Resiliency / TAS Tech Projects',
+  'term1_week10': 'Languages – Part B Photo Journal / PDHPE – Volleyball',
+  // Term 2
+  'term2_week3': 'Science – Sem 1 Exam / Mathematics – In Class Test',
+  'term2_week4': 'CAPA Vis Arts – Bug Life / HSIE Geog – Research / Maths Test',
+  'term2_week5': 'English – Writing Task / CAPA Music – Pop Melody',
+  'term2_week9': 'TAS Agriculture / Dig Tech / Engineering / Food / Graphics / Metal / Textiles / Timber / Multi',
+  'term2_week10': 'PDHPE – Team Building',
+  // Term 3
+  'term3_week2': 'Languages – Listening Quiz',
+  'term3_week4': 'CAPA Vis Arts – Insects in Art / Languages – School Calendar',
+  'term3_week5': 'English – Topic Test / HSIE History – Research / Science Project',
+  'term3_week7': 'Mathematics – In Class Test',
+  'term3_week8': 'English Visual / Languages Speaking / Maths Test / PDHPE Drug Ed',
+  'term3_week9': 'CAPA Music – Performance / TAS Projects (Full Suite)',
+  'term3_week10': 'CAPA Vis Arts – Pop Art / PDHPE – Frisbee/Vortex',
+  // Term 4
+  'term4_week3': 'CAPA Music – Aural Exam / Mathematics – Yearly Exam',
+  'term4_week4': 'Languages – Reading Task / Mathematics – Yearly Exam',
+  'term4_week5': 'CAPA Vis Arts / English Monologue / HSIE History End / Science Sem 2 Exam',
+  'term4_week6': 'PDHPE – European Handball',
+  'term4_week9': 'TAS Tech Final Assessments (All Sectors)'
+};
 
 const standardTimes = [
   { start: '08:30', end: '08:40', label: 'Roll Call', type: 'rollcall' },

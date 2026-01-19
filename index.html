@@ -9,157 +9,116 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #020617;
-            --card-bg: rgba(13, 20, 38, 0.6);
-            --accent-primary: #3b82f6;
-            --accent-primary-glow: rgba(59, 130, 246, 0.5);
-            --accent-gold: #fbbf24;
-            --sidebar-glass: rgba(5, 10, 20, 0.9);
-            --border-white: rgba(255, 255, 255, 0.08);
-        }
-
-        body.system-alert {
-            --accent-primary: #ef4444;
-            --accent-primary-glow: rgba(239, 68, 68, 0.5);
+            --bg-deep: #020205;
+            --card-bg: rgba(6, 8, 15, 0.85);
+            --accent-primary: #00f2ff;
+            --accent-secondary: #ff0055;
+            --accent-gold: #ffcc00;
+            --border-white: rgba(255, 255, 255, 0.15);
+            
+            /* High-Contrast Hyper Palette */
+            --neon-blue: #00d2ff;
+            --neon-purple: #bc00ff;
+            --neon-green: #39ff14;
+            --neon-orange: #ff6b00;
+            --neon-red: #ff003c;
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-deep);
-            color: #f1f5f9;
+            color: #ffffff;
             overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 50% -20%, rgba(30, 58, 138, 0.3) 0%, transparent 50%),
-                linear-gradient(rgba(2, 6, 23, 0.94), rgba(2, 6, 23, 0.94)),
-                url("https://www.transparenttextures.com/patterns/asfalt-dark.png");
             background-attachment: fixed;
             cursor: crosshair;
         }
         
-        /* Advanced CRT Overlay */
-        .crt-overlay {
+        /* Hyper-Vibrant Gradient Mesh */
+        .gradient-mesh {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-            background-size: 100% 3px, 3px 100%;
-            pointer-events: none;
-            z-index: 10000;
-            opacity: 0.3;
-            mix-blend-mode: overlay;
+            z-index: -2;
+            background: 
+                radial-gradient(at 0% 0%, rgba(0, 210, 255, 0.25) 0px, transparent 40%),
+                radial-gradient(at 100% 0%, rgba(188, 0, 255, 0.2) 0px, transparent 40%),
+                radial-gradient(at 50% 50%, rgba(255, 0, 85, 0.05) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(57, 255, 20, 0.1) 0px, transparent 40%);
+            filter: blur(60px);
+            animation: mesh-drift 15s ease-in-out infinite alternate;
         }
 
-        /* Ambient Noise */
-        .noise-layer {
+        @keyframes mesh-drift {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.1) translate(2%, 2%); }
+        }
+
+        /* Digital Noise Texture */
+        .noise-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: url('https://grainy-gradients.vercel.app/noise.svg');
-            opacity: 0.1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.04;
             pointer-events: none;
             z-index: 9999;
-            mix-blend-mode: soft-light;
-        }
-
-        .parallax-bg {
-            position: fixed;
-            top: -10%; left: -10%; width: 120%; height: 120%;
-            background-image: 
-                radial-gradient(circle at 2px 2px, var(--accent-primary-glow) 1px, transparent 0);
-            background-size: 60px 60px;
-            pointer-events: none;
-            z-index: -1;
-            opacity: 0.2;
-            animation: stars-drift 100s linear infinite;
-        }
-
-        @keyframes stars-drift {
-            from { transform: translate(0, 0); }
-            to { transform: translate(-30px, -30px); }
+            mix-blend-mode: overlay;
         }
 
         .pixel-font {
             font-family: 'Press Start 2P', cursive;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.8);
+            text-shadow: 0 0 10px currentColor;
         }
         
         .rpg-card {
             background: var(--card-bg);
-            backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(30px) saturate(250%);
             border: 1px solid var(--border-white);
-            box-shadow: 
-                0 15px 35px -5px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255,255,255,0.05);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rpg-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 15%, transparent 85%, rgba(255,255,255,0.05) 100%);
+            pointer-events: none;
         }
         
         .rpg-card:hover {
-            border-color: rgba(59, 130, 246, 0.3);
-            transform: translateY(-2px);
-            background: rgba(15, 23, 42, 0.7);
-            box-shadow: 
-                0 25px 50px -10px rgba(0, 0, 0, 0.6),
-                0 0 20px var(--accent-primary-glow);
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 40px rgba(0, 242, 255, 0.25), inset 0 0 20px rgba(0, 242, 255, 0.05);
+            transform: translateY(-5px);
         }
 
-        .text-glow {
-            text-shadow: 0 0 10px var(--accent-primary-glow);
-        }
+        /* Neon Text Glows */
+        .glow-text-blue { text-shadow: 0 0 15px rgba(0, 210, 255, 0.9), 0 0 30px rgba(0, 210, 255, 0.4); }
+        .glow-text-green { text-shadow: 0 0 15px rgba(57, 255, 20, 0.9), 0 0 30px rgba(57, 255, 20, 0.4); }
+        .glow-text-red { text-shadow: 0 0 15px rgba(255, 0, 85, 0.9), 0 0 30px rgba(255, 0, 85, 0.4); }
+        .glow-text-gold { text-shadow: 0 0 15px rgba(255, 204, 0, 0.9), 0 0 30px rgba(255, 204, 0, 0.4); }
 
-        .btn-glow:hover {
-            box-shadow: 0 0 15px var(--accent-primary-glow);
-            filter: brightness(1.1);
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb {
-            background: #1e293b;
+            background: linear-gradient(to bottom, var(--neon-blue), var(--neon-purple));
             border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent-primary);
-        }
-
-        @keyframes flicker {
-          0% { opacity: 0.99; }
-          5% { opacity: 0.97; }
-          10% { opacity: 0.99; }
-          15% { opacity: 0.96; }
-          100% { opacity: 1; }
-        }
-        .crt-flicker {
-            animation: flicker 0.15s infinite;
-        }
-
-        /* Fluid Width Utilities */
-        .content-width-safe {
-            max-width: 100%;
-            box-sizing: border-box;
         }
     </style>
 <script type="importmap">
 {
   "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react": "https://esm.sh/react@^19.2.3",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "recharts": "https://esm.sh/recharts@^3.6.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.37.0"
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
   }
 }
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
 <body>
-    <div class="crt-overlay crt-flicker"></div>
-    <div class="noise-layer"></div>
-    <div id="parallax-layer" class="parallax-bg"></div>
+    <div class="noise-overlay"></div>
+    <div class="gradient-mesh"></div>
     <div id="root"></div>
 <script type="module" src="/index.tsx"></script>
 </body>
