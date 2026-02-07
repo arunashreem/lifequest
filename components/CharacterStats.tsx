@@ -3,8 +3,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { UserStats } from '../types';
 import { Zap, Shield, Brain, Heart, Users, Star, Sparkles, Activity, ShieldCheck, Scan, Crown, Medal, Info, X, Trophy, Gem, Flame, Target } from 'lucide-react';
 
-interface CharacterStatsProps { 
-  stats: UserStats; 
+interface CharacterStatsProps {
+  stats: UserStats;
   onScanClick?: () => void;
 }
 
@@ -74,7 +74,7 @@ const CharacterStats: React.FC<CharacterStatsProps> = ({ stats, onScanClick }) =
     return (
       <div className="flex flex-col justify-between p-6 md:p-8 rounded-[2.5rem] bg-[#020205]/95 border border-white/10 hover:border-white/25 transition-all duration-500 group relative shadow-[0_25px_50px_rgba(0,0,0,0.8)] h-full min-h-[190px] w-full overflow-hidden">
         <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl ${currentRank.gradient} opacity-0 group-hover:opacity-10 transition-opacity blur-3xl rounded-full pointer-events-none`} />
-        
+
         <button onClick={() => setShowRankInfo(true)} className="absolute top-4 right-4 p-2 text-slate-600 hover:text-white transition-colors z-20">
           <Info size={18} />
         </button>
@@ -83,7 +83,7 @@ const CharacterStats: React.FC<CharacterStatsProps> = ({ stats, onScanClick }) =
           <div className={`p-4 rounded-2xl bg-black border-2 border-white/15 ${currentRank.color} shadow-[0_0_30px_rgba(255,255,255,0.05)] group-hover:scale-110 transition-all duration-500`}>
             {React.cloneElement(currentRank.icon as any, { size: 28, strokeWidth: 2.5 })}
           </div>
-          
+
           {showNumeralBox && (
             <div className="flex items-baseline gap-1.5 bg-black/60 px-6 py-2.5 rounded-2xl border border-white/10 shadow-inner ring-1 ring-white/5">
               <span className={`text-3xl md:text-4xl font-black italic tracking-tighter tabular-nums leading-none ${currentRank.color} ${currentRank.glow}`}>
@@ -99,16 +99,16 @@ const CharacterStats: React.FC<CharacterStatsProps> = ({ stats, onScanClick }) =
             {currentRank.tier}
           </h4>
           <div className="flex gap-1.5 h-3 w-full bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/[0.05]">
-             {[...Array(10)].map((_, i) => {
-               const idx = RANK_THRESHOLDS.findIndex(r => r === currentRank);
-               const nextVal = idx > 0 ? RANK_THRESHOLDS[idx - 1].level : currentRank.level + 100;
-               const prevVal = currentRank.level;
-               const diff = nextVal - prevVal || 1;
-               const progress = ((stats.level - prevVal) / diff) * 10;
-               return (
-                 <div key={i} className={`flex-1 rounded-full transition-all duration-500 ${i < progress ? currentRank.gradient : 'bg-white/5'}`} />
-               );
-             })}
+            {[...Array(10)].map((_, i) => {
+              const idx = RANK_THRESHOLDS.findIndex(r => r === currentRank);
+              const nextVal = idx > 0 ? RANK_THRESHOLDS[idx - 1].level : currentRank.level + 100;
+              const prevVal = currentRank.level;
+              const diff = nextVal - prevVal || 1;
+              const progress = ((stats.level - prevVal) / diff) * 10;
+              return (
+                <div key={i} className={`flex-1 rounded-full transition-all duration-500 ${i < progress ? currentRank.gradient : 'bg-white/5'}`} />
+              );
+            })}
           </div>
         </div>
       </div>
@@ -118,7 +118,7 @@ const CharacterStats: React.FC<CharacterStatsProps> = ({ stats, onScanClick }) =
   return (
     <div className="rpg-card rounded-[4.5rem] p-10 md:p-16 border-cyan-500/30 relative group bg-black shadow-[0_0_100px_rgba(0,242,255,0.15)] h-full flex flex-col overflow-hidden">
       <div className="absolute inset-0 border-2 border-cyan-500/10 rounded-[4.5rem] pointer-events-none group-hover:border-cyan-500/30 transition-all duration-700" />
-      
+
       <div className="flex flex-col gap-16 relative z-10 h-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           <div className="lg:col-span-4 flex justify-center">
@@ -132,7 +132,7 @@ const CharacterStats: React.FC<CharacterStatsProps> = ({ stats, onScanClick }) =
               </div>
             </div>
           </div>
-          
+
           <div className="lg:col-span-8 flex flex-col items-center lg:items-start text-center lg:text-left min-w-0 w-full overflow-hidden space-y-12 pt-4">
             <div className="w-full">
               <div className="flex items-center justify-center lg:justify-between gap-6 mb-8">
@@ -150,16 +150,16 @@ const CharacterStats: React.FC<CharacterStatsProps> = ({ stats, onScanClick }) =
                 {stats.name}
               </h2>
             </div>
-            
+
             <div className="w-full bg-slate-950/95 py-14 px-12 rounded-[4.5rem] border-2 border-white/10 shadow-[inset_0_4px_30px_rgba(0,0,0,0.9)] relative group/xp overflow-hidden ring-4 ring-black/60">
               <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
               <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-12 gap-8 relative z-10">
                 <div className="flex flex-col items-center md:items-start gap-3">
-                   <div className="flex items-center gap-3">
-                      <Zap size={18} className="text-cyan-400 animate-pulse" />
-                      <span className="text-sm md:text-base font-black text-cyan-500/80 uppercase tracking-[0.7em] leading-none">Potential Core</span>
-                   </div>
-                   <span className="text-[10px] md:text-[11px] font-bold text-slate-600 uppercase tracking-[0.4em] ml-0 md:ml-8">Temporal Growth Matrix</span>
+                  <div className="flex items-center gap-3">
+                    <Zap size={18} className="text-cyan-400 animate-pulse" />
+                    <span className="text-sm md:text-base font-black text-cyan-500/80 uppercase tracking-[0.7em] leading-none">Potential Core</span>
+                  </div>
+                  <span className="text-[10px] md:text-[11px] font-bold text-slate-600 uppercase tracking-[0.4em] ml-0 md:ml-8">Temporal Growth Matrix</span>
                 </div>
                 <div className="flex items-baseline gap-4 md:gap-6 bg-black/40 px-8 py-4 rounded-[2rem] border border-white/5 shadow-2xl">
                   <span className="text-6xl md:text-8xl font-black text-cyan-400 tabular-nums glow-text-blue leading-none italic tracking-tighter">{stats.xp}</span>
@@ -187,66 +187,65 @@ const CharacterStats: React.FC<CharacterStatsProps> = ({ stats, onScanClick }) =
           <RankCard />
         </div>
       </div>
-      
+
       {showRankInfo && (
         <div className="fixed inset-0 z-[10001] flex items-center justify-center p-6 bg-[#020205]/95 backdrop-blur-3xl animate-in fade-in duration-500">
-           <div className="relative w-full max-w-5xl bg-slate-950 border border-white/10 rounded-[4rem] p-10 md:p-16 shadow-[0_0_150px_rgba(0,0,0,1)] animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-hidden flex flex-col">
-              <button onClick={() => setShowRankInfo(false)} className="absolute top-8 right-8 p-4 text-slate-500 hover:text-white transition-all bg-black/40 rounded-2xl border border-white/5 shadow-xl hover:bg-red-500/10 z-30">
-                <X size={28} />
-              </button>
-              
-              <div className="mb-12 text-center relative z-20">
-                 <h3 className="text-5xl md:text-6xl font-black text-white uppercase italic tracking-tighter glow-text-blue mb-4">Rank Hierarchy</h3>
-                 <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em]">Neural Level Requirements for Temporal Ascension</p>
-              </div>
+          <div className="relative w-full max-w-5xl bg-slate-950 border border-white/10 rounded-[4rem] p-10 md:p-16 shadow-[0_0_150px_rgba(0,0,0,1)] animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-hidden flex flex-col">
+            <button onClick={() => setShowRankInfo(false)} className="absolute top-8 right-8 p-4 text-slate-500 hover:text-white transition-all bg-black/40 rounded-2xl border border-white/5 shadow-xl hover:bg-red-500/10 z-30">
+              <X size={28} />
+            </button>
 
-              <div className="flex-1 overflow-y-auto pr-4 space-y-6 no-scrollbar relative z-10">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
-                    {[...RANK_THRESHOLDS].filter(r => r.tier !== 'Initiate').reverse().map((r, i) => {
-                       const isReached = stats.level >= r.level;
-                       return (
-                         <div key={i} className={`flex items-center justify-between p-8 rounded-[3.5rem] border-2 transition-all duration-500 group/item relative overflow-hidden ${
-                           isReached ? 'bg-slate-900 border-white/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)] scale-[1.02]' : 'bg-black/40 border-white/5 opacity-20 grayscale'
-                         }`}>
-                            <div className="flex items-center gap-8 relative z-10">
-                               <div className={`p-5 rounded-[1.8rem] bg-slate-950 border-2 border-white/10 ${r.color} shadow-[0_0_30px_rgba(255,255,255,0.05)] group-hover/item:scale-110 transition-transform`}>
-                                  {React.cloneElement(r.icon as any, { size: 28, strokeWidth: 2.5 })}
-                               </div>
-                               <div>
-                                  <h5 className={`text-2xl font-black uppercase italic tracking-tighter leading-none mb-2 ${r.color} ${r.glow}`}>
-                                    {r.tier} {r.subRank || ''}
-                                  </h5>
-                                  <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">THRESHOLD</p>
-                               </div>
-                            </div>
-                            <div className="flex flex-col items-end relative z-10">
-                               <div className="flex items-baseline gap-1.5 bg-black/40 px-5 py-2 rounded-2xl border border-white/5">
-                                  <span className={`text-4xl font-black italic tracking-tighter tabular-nums leading-none ${isReached ? 'text-white' : 'text-slate-700'}`}>{r.level}</span>
-                                  <span className="text-[11px] font-black text-slate-700 italic uppercase">LVL</span>
-                               </div>
-                               {isReached && (
-                                 <div className="mt-3 flex items-center gap-2 px-4 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full animate-pulse">
-                                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                   <span className="text-[8px] font-black uppercase tracking-widest">SECURED</span>
-                                 </div>
-                               )}
-                            </div>
-                            
-                            {isReached && <div className={`absolute -right-8 -bottom-8 w-48 h-48 bg-gradient-to-br ${r.gradient} opacity-[0.08] blur-[60px] rounded-full group-hover/item:opacity-20 transition-opacity`} />}
-                            {isReached && <div className={`absolute top-0 left-0 w-2 h-full bg-gradient-to-b ${r.gradient}`} />}
-                         </div>
-                       );
-                    })}
-                 </div>
-              </div>
+            <div className="mb-12 text-center relative z-20">
+              <h3 className="text-5xl md:text-6xl font-black text-white uppercase italic tracking-tighter glow-text-blue mb-4">Rank Hierarchy</h3>
+              <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.6em]">Neural Level Requirements for Temporal Ascension</p>
+            </div>
 
-              <div className="mt-12 p-10 bg-blue-500/5 border border-blue-500/10 rounded-[3rem] text-center relative group shrink-0">
-                 <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-[3rem]" />
-                 <p className="text-base md:text-lg text-slate-400 font-medium leading-relaxed italic relative z-10 max-w-3xl mx-auto">
-                   "A Hero is not measured by the crown they wear, but by the discipline required to earn it. Every level is a heartbeat in the temporal landscape."
-                 </p>
+            <div className="flex-1 overflow-y-auto pr-4 space-y-6 no-scrollbar relative z-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-12">
+                {[...RANK_THRESHOLDS].filter(r => r.tier !== 'Initiate').reverse().map((r, i) => {
+                  const isReached = stats.level >= r.level;
+                  return (
+                    <div key={i} className={`flex items-center justify-between p-8 rounded-[3.5rem] border-2 transition-all duration-500 group/item relative overflow-hidden ${isReached ? 'bg-slate-900 border-white/30 shadow-[0_20px_50px_rgba(0,0,0,0.5)] scale-[1.02]' : 'bg-black/40 border-white/5 opacity-20 grayscale'
+                      }`}>
+                      <div className="flex items-center gap-8 relative z-10">
+                        <div className={`p-5 rounded-[1.8rem] bg-slate-950 border-2 border-white/10 ${r.color} shadow-[0_0_30px_rgba(255,255,255,0.05)] group-hover/item:scale-110 transition-transform`}>
+                          {React.cloneElement(r.icon as any, { size: 28, strokeWidth: 2.5 })}
+                        </div>
+                        <div>
+                          <h5 className={`text-2xl font-black uppercase italic tracking-tighter leading-none mb-2 ${r.color} ${r.glow}`}>
+                            {r.tier} {r.subRank || ''}
+                          </h5>
+                          <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">THRESHOLD</p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end relative z-10">
+                        <div className="flex items-baseline gap-1.5 bg-black/40 px-5 py-2 rounded-2xl border border-white/5">
+                          <span className={`text-4xl font-black italic tracking-tighter tabular-nums leading-none ${isReached ? 'text-white' : 'text-slate-700'}`}>{r.level}</span>
+                          <span className="text-[11px] font-black text-slate-700 italic uppercase">LVL</span>
+                        </div>
+                        {isReached && (
+                          <div className="mt-3 flex items-center gap-2 px-4 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-full animate-pulse">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            <span className="text-[8px] font-black uppercase tracking-widest">SECURED</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {isReached && <div className={`absolute -right-8 -bottom-8 w-48 h-48 bg-gradient-to-br ${r.gradient} opacity-[0.08] blur-[60px] rounded-full group-hover/item:opacity-20 transition-opacity`} />}
+                      {isReached && <div className={`absolute top-0 left-0 w-2 h-full bg-gradient-to-b ${r.gradient}`} />}
+                    </div>
+                  );
+                })}
               </div>
-           </div>
+            </div>
+
+            <div className="mt-12 p-10 bg-blue-500/5 border border-blue-500/10 rounded-[3rem] text-center relative group shrink-0">
+              <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-[3rem]" />
+              <p className="text-base md:text-lg text-slate-400 font-medium leading-relaxed italic relative z-10 max-w-3xl mx-auto">
+                "A Hero is not measured by the crown they wear, but by the discipline required to earn it. Every level is a heartbeat in the temporal landscape."
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

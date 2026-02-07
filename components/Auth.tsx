@@ -21,7 +21,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [view, setView] = useState<'landing' | 'chooser' | 'password'>('landing');
   const [rememberedAccounts, setRememberedAccounts] = useState<RememberedAccount[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<RememberedAccount | null>(null);
-  
+
   const [emailInput, setEmailInput] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,17 +47,17 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     setError(null);
     setErrorDetails(null);
     setErrorType('NONE');
-    
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      onLogin({ 
-        name: result.user.displayName || 'Hero', 
-        email: result.user.email || '', 
-        provider: 'Firebase/Google' 
+      onLogin({
+        name: result.user.displayName || 'Hero',
+        email: result.user.email || '',
+        provider: 'Firebase/Google'
       });
     } catch (err: any) {
       console.error("Firebase Auth Error:", err);
-      
+
       if (err.code === 'auth/api-key-not-valid' || err.message?.includes('api-key-not-valid')) {
         setError("API Key Restrictions Error");
         setErrorDetails("The 'Identity Toolkit API' is missing from your GCP Key Restrictions.");
@@ -97,7 +97,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           </div>
         )}
 
-        <button 
+        <button
           onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white text-zinc-700 rounded-full font-bold text-[11px] uppercase tracking-tighter transition-all active:scale-[0.98] shadow-lg hover:bg-zinc-50 mb-8"
         >
@@ -113,14 +113,14 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">Protocol: Domain Authorization</h4>
               </div>
               <p className="text-[10px] text-slate-300 leading-relaxed font-bold uppercase tracking-wider">
-                1. Open Firebase Console -> Authentication -> Settings -> Authorized Domains<br/>
+                1. Open Firebase Console {'->'} Authentication {'->'} Settings {'->'} Authorized Domains<br />
                 2. Add this specific value: <span className="text-orange-400 select-all">{window.location.hostname}</span>
               </p>
               <div className="pt-2 flex gap-3">
-                <a 
-                  href={`https://console.firebase.google.com/project/${auth?.app?.options?.projectId}/authentication/settings`} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href={`https://console.firebase.google.com/project/${auth?.app?.options?.projectId}/authentication/settings`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex-1 py-3 bg-orange-600 text-white rounded-xl text-[9px] font-black uppercase text-center shadow-lg hover:bg-orange-500"
                 >
                   Go to Settings
@@ -146,10 +146,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                 </li>
               </ul>
               <div className="pt-4 flex gap-3">
-                <a 
-                  href="https://console.cloud.google.com/apis/credentials" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://console.cloud.google.com/apis/credentials"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex-1 py-3 bg-orange-600 text-white rounded-xl text-[9px] font-black uppercase text-center shadow-lg hover:bg-orange-500"
                 >
                   Open Dashboard
@@ -165,10 +165,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); setView('password'); }} className="space-y-6">
-          <input 
-            type="email" required placeholder="Neural ID (Email)" 
+          <input
+            type="email" required placeholder="Neural ID (Email)"
             value={emailInput} onChange={e => setEmailInput(e.target.value)}
-            className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white placeholder:text-zinc-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all" 
+            className="w-full bg-black/40 border border-white/10 rounded-xl px-5 py-4 text-white placeholder:text-zinc-700 outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           />
           <button type="submit" className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-full font-black text-xs tracking-widest shadow-xl transition-all">INITIALIZE</button>
         </form>
@@ -209,10 +209,10 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google" className="h-6 mx-auto mb-8" />
         <h2 className="text-2xl font-bold text-zinc-900 tracking-tight mb-8">Confirm Identity</h2>
         <form onSubmit={(e) => { e.preventDefault(); onLogin({ name: emailInput.split('@')[0], email: emailInput, provider: 'Local' }); }} className="space-y-8 text-left">
-          <input 
-            type="password" required placeholder="Access Code" 
+          <input
+            type="password" required placeholder="Access Code"
             value={password} onChange={e => setPassword(e.target.value)} autoFocus
-            className="w-full bg-zinc-50 border-2 border-zinc-200 rounded-2xl px-6 py-5 text-lg outline-none focus:border-blue-500 transition-all" 
+            className="w-full bg-zinc-50 border-2 border-zinc-200 rounded-2xl px-6 py-5 text-lg outline-none focus:border-blue-500 transition-all"
           />
           <div className="flex gap-4">
             <button type="button" onClick={() => setView('chooser')} className="px-6 py-5 text-blue-600 font-bold uppercase text-xs tracking-widest">Back</button>
@@ -242,6 +242,7 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         ) : (
           <>
             {view === 'landing' && renderLanding()}
+            {/* Fix: Corrected function call from renderAccountChooser to the actual defined renderChooser function */}
             {view === 'chooser' && renderChooser()}
             {view === 'password' && renderPassword()}
           </>
