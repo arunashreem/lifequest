@@ -1,5 +1,5 @@
 {
-  "name": "LifeQuest",
+  "name": "LifeQuest RPG",
   "description": "A gamified life planner where you level up your real life. Complete fitness, study, and productivity quests to earn XP and unlock your full potential.",
   "requestFramePermissions": [
     "camera",

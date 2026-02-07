@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { Sun, Cloud, CloudRain, CloudLightning, Loader2, ThermometerSun, Droplets, Activity, AlertCircle, RefreshCw } from 'lucide-react';
+import { Sun, Cloud, CloudRain, CloudLightning, Loader2, ThermometerSun, Droplets, Activity, AlertCircle, RefreshCw, ExternalLink } from 'lucide-react';
 import { getWeatherForecast } from '../services/gemini';
+import Skeleton from './Skeleton';
 
 const WeatherWidget: React.FC = () => {
   const [weather, setWeather] = useState<any>(null);
@@ -42,134 +43,108 @@ const WeatherWidget: React.FC = () => {
     }
   };
 
+  const cleanTemp = (val: any) => {
+    if (val === undefined || val === null || val === '') return '--';
+    const match = String(val).match(/\d+/);
+    return match ? match[0] : '--';
+  };
+
   if (loading && !weather) {
     return (
-      <div className="rpg-card p-6 rounded-[2.5rem] border-slate-800 flex flex-col items-center justify-center h-full min-h-[300px] opacity-50 space-y-4">
-        <div className="relative">
-          <Loader2 className="animate-spin text-blue-500" size={40} />
-          <div className="absolute inset-0 bg-blue-500/20 blur-xl animate-pulse" />
+      <div className="rpg-card rounded-[2.5rem] border-2 border-white/5 bg-slate-950 p-6 flex flex-col gap-4 min-h-[280px]">
+        <div className="flex items-center justify-between">
+          <Skeleton className="w-32 h-4" variant="text" />
+          <Skeleton className="w-8 h-8" variant="circle" />
         </div>
-        <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em]">Syncing Sensors...</p>
+        <div className="flex gap-8 items-center flex-1">
+          <Skeleton className="w-24 h-24" variant="circle" />
+          <div className="flex-1 space-y-3">
+             <Skeleton className="w-full h-12" />
+             <Skeleton className="w-1/2 h-4" />
+          </div>
+        </div>
       </div>
     );
   }
 
   if (errorType === 'QUOTA' && !weather) {
     return (
-      <div className="rpg-card p-6 rounded-[2.5rem] border-amber-500/30 bg-amber-950/10 flex flex-col items-center justify-center h-full min-h-[300px] space-y-6 text-center">
-        <div className="p-3 bg-amber-500/20 rounded-full border border-amber-500/40">
-          <AlertCircle className="text-amber-500" size={32} />
-        </div>
-        <div>
-          <h3 className="text-base font-black text-white uppercase tracking-tighter italic">Link Exhausted</h3>
-          <p className="text-slate-400 text-[10px] mt-2 max-w-[180px] mx-auto">Sensors reached limit. Sync offline.</p>
-        </div>
-        <button 
-          onClick={() => fetchWeather(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl font-black text-[9px] uppercase tracking-widest transition-all"
-        >
-          <RefreshCw size={12} /> Retry
-        </button>
+      <div className="rpg-card p-8 rounded-[2.5rem] border-amber-500/30 bg-amber-950/10 flex flex-col items-center justify-center min-h-[280px] space-y-4 text-center">
+        <AlertCircle className="text-amber-500" size={32} />
+        <p className="text-slate-400 text-[10px] font-black uppercase">Atmospheric sensors limited. Offline sync active.</p>
+        <button onClick={() => fetchWeather(true)} className="px-6 py-2 bg-amber-600 text-white rounded-xl font-black text-[9px] uppercase">Retry</button>
       </div>
     );
   }
 
   if (!weather) return null;
 
+  const feelsLike = cleanTemp(weather.feels_like);
+  const currentTemp = cleanTemp(weather.temp_current || weather.temp_max);
+  const maxTemp = cleanTemp(weather.temp_max);
+  const minTemp = cleanTemp(weather.temp_min);
+
   return (
-    <div className={`rpg-card rounded-[2.5rem] border-2 h-full flex flex-col ${errorType === 'QUOTA' ? 'border-amber-500/40' : 'border-blue-500/20'} bg-slate-950/40 shadow-2xl animate-in fade-in zoom-in duration-700 relative overflow-hidden group w-full`}>
-      {/* Background Ambience */}
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,_rgba(59,130,246,0.06),_transparent_70%)] pointer-events-none" />
+    <div className={`rpg-card rounded-[2.5rem] border-2 flex flex-col ${errorType === 'QUOTA' ? 'border-amber-500/40' : 'border-blue-500/20'} bg-slate-950 shadow-2xl animate-in fade-in zoom-in duration-700 relative overflow-hidden group w-full min-h-[280px]`}>
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,_rgba(59,130,246,0.05),_transparent_70%)] pointer-events-none" />
 
-      {/* Header Info */}
-      <div className="p-5 flex-1 flex flex-col relative z-10">
-        <div className="flex flex-col gap-4 mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                <ThermometerSun size={18} className="text-blue-400" />
+      <div className="p-6 md:p-8 flex-1 flex flex-col relative z-10 min-w-0">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-500/10 rounded-xl border border-blue-500/20 shrink-0">
+              <ThermometerSun size={20} className="text-blue-400" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] italic leading-tight">ATMOSPHERIC SCANNER</h3>
+              <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mt-1">SYDNEY CORE</p>
+            </div>
+          </div>
+          {weather.grounding_urls?.length > 0 && (
+            <a href={weather.grounding_urls[0]} target="_blank" rel="noopener noreferrer" className="p-2 bg-white/5 border border-white/10 rounded-lg text-slate-500 hover:text-blue-400 transition-all"><ExternalLink size={14} /></a>
+          )}
+        </div>
+
+        <div className="flex flex-col md:flex-row items-center gap-8 flex-1">
+          <div className="flex items-center gap-6 md:flex-1">
+            <div className="relative p-5 bg-slate-900/60 rounded-[2rem] border border-white/10 shadow-xl group-hover:scale-110 transition-transform duration-500">
+              {getIcon(weather.icon_type, 56)}
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-start">
+                <span className="text-6xl md:text-7xl font-black text-white tracking-tighter tabular-nums leading-none">{currentTemp}</span>
+                <span className="text-2xl font-black text-blue-500 ml-1 mt-1 italic">°C</span>
               </div>
-              <div>
-                <h3 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] italic leading-none">Atmospheric Scanner</h3>
-                <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest mt-1 flex items-center gap-1">
-                  <span className={`w-1 h-1 rounded-full ${errorType === 'QUOTA' ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`} />
-                  Sydney Sync
-                </p>
-              </div>
+              <p className="text-sm font-black text-white uppercase tracking-widest mt-2 italic truncate max-w-[150px]">{weather.summary}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:flex md:flex-col gap-3 w-full md:w-auto shrink-0">
+            <div className="bg-black/60 p-4 rounded-2xl border border-white/5 flex flex-col items-center min-w-[120px]">
+              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1 flex items-center gap-2"><Activity size={10} /> RANGE</span>
+              <span className="text-lg font-black text-white italic">{maxTemp}° / {minTemp}°</span>
+            </div>
+            <div className="bg-black/60 p-4 rounded-2xl border border-white/5 flex flex-col items-center min-w-[120px]">
+              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1 flex items-center gap-2"><Droplets size={10} /> PRECIP</span>
+              <span className="text-lg font-black text-cyan-400 italic">{weather.rain_range || '--'}</span>
             </div>
           </div>
         </div>
-
-        {/* Primary Weather Cluster - Removed mb-auto to move stats UP */}
-        <div className="flex flex-col items-center gap-4 mt-2">
-          <div className="relative">
-            <div className="absolute inset-[-15px] bg-blue-500/15 blur-3xl rounded-full animate-pulse" />
-            <div className="relative bg-slate-900/80 p-6 rounded-[2.5rem] border border-white/5 shadow-2xl flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-              {getIcon(weather.icon_type, 64)}
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center text-center w-full min-w-0">
-            <div className="flex items-start justify-center gap-0.5 min-w-0">
-              <span className="text-6xl sm:text-7xl font-black text-white tracking-tighter tabular-nums leading-none drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                {weather.temp_current || weather.temp_max}
-              </span>
-              <span className="text-3xl font-black text-blue-500 mt-1">°</span>
-            </div>
-            
-            <div className="mt-4 px-2 w-full">
-              <p className="text-[14px] font-black text-white uppercase tracking-tight leading-snug break-words">
-                {weather.summary}
-              </p>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 opacity-80">
-                Feels like <span className="text-blue-400 font-black">{weather.feels_like}°</span>
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Secondary Stats Strip - Pushed up as empty space removed above */}
-        <div className="grid grid-cols-2 gap-3 mt-8">
-          <div className="bg-black/40 p-4 rounded-3xl border border-white/5 shadow-inner hover:border-blue-500/30 transition-all flex flex-col items-center group/stat">
-            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1 group-hover/stat:text-blue-400">
-              <Activity size={10} className="text-blue-500" /> Range
-            </span>
-            <span className="text-lg font-black text-white tracking-tighter tabular-nums">{weather.temp_max}° / {weather.temp_min}°</span>
-          </div>
-
-          <div className="bg-black/40 p-4 rounded-3xl border border-white/5 shadow-inner hover:border-cyan-500/30 transition-all flex flex-col items-center group/stat">
-            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1 group-hover/stat:text-cyan-400">
-              <Droplets size={10} className="text-cyan-500" /> Rain
-            </span>
-            <span className="text-lg font-black text-cyan-400 tracking-tighter truncate w-full text-center tabular-nums">{weather.rain_range}</span>
-          </div>
-        </div>
-        
-        {/* Spacer to push Temporal Trace to the very bottom */}
-        <div className="flex-1" />
       </div>
 
-      {/* Hourly Trace - Significantly taller and larger icons/text */}
-      <div className="border-t border-white/5 bg-slate-950/60 pt-5 pb-6">
-        <div className="px-6 flex items-center justify-between mb-4">
-          <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Temporal Trace</span>
-        </div>
-        
-        <div className="overflow-x-auto scrollbar-hide flex gap-4 px-6 no-scrollbar pb-2">
-          {weather.hourly?.slice(0, 8).map((hour: any, i: number) => (
-            <div key={i} className="flex flex-col items-center justify-between shrink-0 px-4 py-6 bg-slate-900/40 rounded-3xl border border-white/5 min-w-[85px] min-h-[140px] hover:bg-blue-900/20 hover:border-blue-500/30 transition-all group/hour shadow-lg">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover/hour:text-blue-400">{hour.time}</span>
-              <div className="my-2 group-hover/hour:scale-110 transition-transform">
-                {getIcon(hour.icon, 28)}
-              </div>
-              <p className="text-xl font-black text-white leading-none tracking-tighter tabular-nums">{hour.temp}°</p>
+      <div className="border-t border-white/10 bg-slate-950/80 px-6 py-4">
+        <div className="overflow-x-auto flex gap-4 no-scrollbar">
+          {weather.hourly?.slice(0, 10).map((hour: any, i: number) => (
+            <div key={i} className="flex flex-col items-center shrink-0 p-3 bg-slate-900/40 rounded-2xl border border-white/5 min-w-[80px] hover:border-blue-500/30 transition-all">
+              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-2">{hour.time}</span>
+              {getIcon(hour.icon, 20)}
+              <p className="text-sm font-black text-white mt-2 italic">{cleanTemp(hour.temp)}°</p>
             </div>
           ))}
         </div>
       </div>
       
       <style>{`
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .animate-spin-slow { animation: spin 10s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

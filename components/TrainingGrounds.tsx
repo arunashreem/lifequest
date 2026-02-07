@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { Dumbbell, Flame, Zap, Shield, Trophy, ChevronRight, Activity, Sparkles, Wind } from 'lucide-react';
+import { Dumbbell, Flame, Zap, Shield, Trophy, ChevronRight, Activity, Sparkles, Wind, Scan } from 'lucide-react';
 import { Difficulty } from '../types';
 
 interface TrainingGroundsProps {
   onCompleteWorkout: (xp: number, gold: number, difficulty: Difficulty) => void;
+  setActiveTab?: (tab: string) => void;
 }
 
 interface Workout {
@@ -18,6 +19,7 @@ interface Workout {
   icon: React.ReactNode;
   color: string;
   exercises: string[];
+  hasAiScanner?: boolean;
 }
 
 const WORKOUTS: Workout[] = [
@@ -43,7 +45,8 @@ const WORKOUTS: Workout[] = [
     difficulty: Difficulty.EASY,
     icon: <Sparkles className="w-8 h-8" />,
     color: 'from-cyan-400 to-blue-600',
-    exercises: ['12 Wall Slides (The Alignment)', '15 Superman Arches (The Wing)', '20 Chin Tucks (The Focus)', '1m Cobra Stretch (The Awakening)']
+    exercises: ['12 Wall Slides (The Alignment)', '15 Superman Arches (The Wing)', '20 Chin Tucks (The Focus)', '1m Cobra Stretch (The Awakening)'],
+    hasAiScanner: true
   },
   {
     id: 'no-db',
@@ -95,61 +98,84 @@ const WORKOUTS: Workout[] = [
   }
 ];
 
-const TrainingGrounds: React.FC<TrainingGroundsProps> = ({ onCompleteWorkout }) => {
+const TrainingGrounds: React.FC<TrainingGroundsProps> = ({ onCompleteWorkout, setActiveTab }) => {
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="space-y-16 animate-in fade-in duration-1000 pb-20">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
         <div>
-          <h2 className="text-3xl font-black text-white uppercase tracking-tighter">The Training Grounds</h2>
-          <p className="text-slate-400 text-sm font-bold flex items-center gap-2">
-            <Zap size={14} className="text-yellow-500" />
-            Forge your physical vessel with nothing but floor space and iron.
+          <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter italic glow-text-gold">Training Grounds</h2>
+          <p className="text-slate-500 text-[12px] font-black uppercase tracking-[0.6em] mt-6 flex items-center gap-4">
+            <Activity className="text-yellow-500 animate-pulse" /> 
+            Forging the Physical Vessel with Floor Space and Iron
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {WORKOUTS.map((workout) => (
           <div 
             key={workout.id}
-            className="group relative rpg-card rounded-2xl overflow-hidden border-slate-800 hover:border-blue-500/50 transition-all flex flex-col"
+            className="group relative rpg-card rounded-[3.5rem] overflow-hidden border-white/5 bg-slate-900/40 hover:border-yellow-500/40 transition-all duration-700 flex flex-col hover:shadow-3xl"
           >
-            <div className={`h-2 bg-gradient-to-r ${workout.color}`} />
+            <div className={`h-3 bg-gradient-to-r ${workout.color} opacity-80`} />
             
-            <div className="p-6 flex-1">
-              <div className="flex justify-between items-start mb-4">
-                <div className={`p-4 rounded-xl bg-slate-900 border border-slate-800 text-white group-hover:scale-110 transition-transform shadow-lg`}>
+            <div className="p-10 md:p-12 flex-1 flex flex-col">
+              <div className="flex justify-between items-start mb-8">
+                <div className={`p-6 rounded-[2rem] bg-black/60 border border-white/10 text-white group-hover:scale-110 transition-transform shadow-2xl group-hover:text-yellow-400`}>
                   {workout.icon}
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{workout.difficulty}</span>
-                  <div className="flex items-center gap-2 text-yellow-500 font-black mt-1">
-                    <Trophy size={14} />
+                <div className="text-right space-y-2">
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-black/40 px-4 py-1.5 rounded-full border border-white/5">{workout.difficulty}</span>
+                  <div className="flex items-center gap-2 text-yellow-500 font-black text-2xl tracking-tighter italic glow-text-gold">
+                    <Trophy size={20} />
                     <span>+{workout.xp} XP</span>
                   </div>
                 </div>
               </div>
 
-              <h3 className="text-xl font-black text-white mb-1 uppercase tracking-tight">{workout.title}</h3>
-              <p className="text-blue-400 text-[10px] font-black uppercase tracking-widest mb-3">{workout.subtitle}</p>
-              <p className="text-slate-400 text-sm mb-6 italic">"{workout.description}"</p>
-
               <div className="space-y-2 mb-8">
-                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Raid Requirements</p>
+                <h3 className="text-3xl font-black text-white uppercase tracking-tight leading-none group-hover:text-yellow-100 transition-colors">{workout.title}</h3>
+                <p className="text-yellow-500 text-[11px] font-black uppercase tracking-[0.3em]">{workout.subtitle}</p>
+              </div>
+
+              <p className="text-slate-400 text-lg mb-10 italic leading-relaxed">"{workout.description}"</p>
+
+              <div className="space-y-3 mb-10 flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="text-[9px] font-black text-slate-600 uppercase tracking-[0.4em]">Raid Requirements</p>
+                  {workout.hasAiScanner && setActiveTab && (
+                    <button 
+                      onClick={() => setActiveTab('vanguard')}
+                      className="flex items-center gap-2 px-3 py-1 bg-rose-600 text-white font-black text-[8px] uppercase tracking-widest rounded-lg shadow-xl animate-pulse hover:scale-105 transition-transform"
+                    >
+                      <Scan size={10} /> Launch AI Scanner
+                    </button>
+                  )}
+                </div>
                 {workout.exercises.map((ex, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs font-bold text-slate-300 bg-black/20 p-2 rounded-lg border border-white/5">
-                    <ChevronRight size={12} className="text-blue-500" />
+                  <div key={i} className="flex items-center gap-4 text-sm font-bold text-slate-300 bg-black/40 p-4 rounded-2xl border border-white/5 group-hover:border-yellow-500/20 transition-all">
+                    <ChevronRight size={16} className="text-yellow-500" />
                     {ex}
                   </div>
                 ))}
               </div>
 
-              <button 
-                onClick={() => onCompleteWorkout(workout.xp, workout.gold, workout.difficulty)}
-                className={`w-full py-4 rounded-xl bg-gradient-to-r ${workout.color} text-white font-black text-xs uppercase tracking-widest shadow-lg shadow-black/40 hover:brightness-110 transition-all active:scale-95`}
-              >
-                Complete Training Session
-              </button>
+              <div className="flex flex-col gap-4">
+                {workout.hasAiScanner && setActiveTab && (
+                  <button 
+                    onClick={() => setActiveTab('vanguard')}
+                    className="w-full py-6 rounded-[2.5rem] bg-black border-2 border-rose-500/40 text-rose-400 font-black text-xs uppercase tracking-[0.3em] shadow-2xl hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center gap-4"
+                  >
+                    <Scan size={20} /> AI Posture Analysis Mode
+                  </button>
+                )}
+                <button 
+                  onClick={() => onCompleteWorkout(workout.xp, workout.gold, workout.difficulty)}
+                  className={`w-full py-6 rounded-[2.5rem] bg-gradient-to-r ${workout.color} text-black font-black text-xs uppercase tracking-[0.3em] shadow-2xl hover:brightness-110 transition-all active:scale-95`}
+                >
+                  Complete Training Session
+                </button>
+              </div>
             </div>
           </div>
         ))}

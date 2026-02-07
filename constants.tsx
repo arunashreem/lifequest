@@ -16,29 +16,32 @@ import {
   Pencil,
   Briefcase,
   Trash,
-  Library
+  Library,
+  Sparkles,
+  Trophy,
+  Rocket
 } from 'lucide-react';
-import { TaskCategory, Difficulty, Reward, Habit, Book, TimetableSlot, AssessmentMap } from './types';
+import { TaskCategory, Difficulty, Reward, Habit, Book, TimetableSlot, AssessmentMap, UserStats } from './types';
 
 export const CATEGORY_ICONS: Record<TaskCategory, React.ReactNode> = {
-  [TaskCategory.FITNESS]: <Dumbbell className="w-5 h-5 text-red-400" />,
-  [TaskCategory.STUDY]: <BookOpen className="w-5 h-5 text-blue-400" />,
-  [TaskCategory.SCHOOL]: <School className="w-5 h-5 text-indigo-400" />,
-  [TaskCategory.HOMEWORK]: <Pencil className="w-5 h-5 text-emerald-400" />,
-  [TaskCategory.CHORES]: <Trash className="w-5 h-5 text-orange-400" />,
-  [TaskCategory.HEALTH]: <Heart className="w-5 h-5 text-green-400" />,
-  [TaskCategory.SOCIAL]: <Users className="w-5 h-5 text-purple-400" />,
-  [TaskCategory.SCREEN_TIME]: <Monitor className="w-5 h-5 text-slate-400" />,
-  [TaskCategory.MINDFULNESS]: <Zap className="w-5 h-5 text-yellow-400" />,
-  [TaskCategory.WORK]: <Briefcase className="w-5 h-5 text-gray-400" />,
-  [TaskCategory.READING]: <Library className="w-5 h-5 text-cyan-400" />
+  [TaskCategory.FITNESS]: <Dumbbell className="w-5 h-5 text-red-500" />,
+  [TaskCategory.STUDY]: <BookOpen className="w-5 h-5 text-blue-500" />,
+  [TaskCategory.SCHOOL]: <School className="w-5 h-5 text-indigo-500" />,
+  [TaskCategory.HOMEWORK]: <Pencil className="w-5 h-5 text-emerald-500" />,
+  [TaskCategory.CHORES]: <Trash className="w-5 h-5 text-orange-500" />,
+  [TaskCategory.HEALTH]: <Heart className="w-5 h-5 text-green-500" />,
+  [TaskCategory.SOCIAL]: <Users className="w-5 h-5 text-purple-500" />,
+  [TaskCategory.SCREEN_TIME]: <Monitor className="w-5 h-5 text-slate-500" />,
+  [TaskCategory.MINDFULNESS]: <Zap className="w-5 h-5 text-yellow-500" />,
+  [TaskCategory.WORK]: <Briefcase className="w-5 h-5 text-slate-600" />,
+  [TaskCategory.READING]: <Library className="w-5 h-5 text-cyan-500" />
 };
 
 export const DIFFICULTY_COLORS: Record<Difficulty, string> = {
-  [Difficulty.EASY]: 'bg-green-900/50 text-green-300 border-green-700',
-  [Difficulty.MEDIUM]: 'bg-blue-900/50 text-blue-300 border-blue-700',
-  [Difficulty.HARD]: 'bg-purple-900/50 text-purple-300 border-purple-700',
-  [Difficulty.EPIC]: 'bg-orange-900/50 text-orange-300 border-orange-700'
+  [Difficulty.EASY]: 'bg-green-100 text-green-700 border-green-200',
+  [Difficulty.MEDIUM]: 'bg-blue-100 text-blue-700 border-blue-200',
+  [Difficulty.HARD]: 'bg-purple-100 text-purple-700 border-purple-200',
+  [Difficulty.EPIC]: 'bg-orange-100 text-orange-700 border-orange-200'
 };
 
 export const XP_VALUES: Record<Difficulty, number> = {
@@ -48,9 +51,16 @@ export const XP_VALUES: Record<Difficulty, number> = {
   [Difficulty.EPIC]: 1000
 };
 
-export const INITIAL_STATS = {
-  name: 'The Hero',
+export const INITIAL_CHORES = [
+  { id: 'c1', name: 'Sanctum Reset', value: 1.00 },
+  { id: 'c2', name: 'Utility Management', value: 1.00 },
+  { id: 'c3', name: 'Waste Disposal', value: 1.00 }
+];
+
+export const INITIAL_STATS: UserStats = {
+  name: 'Abhi Pondala',
   level: 1,
+  mastery: 0,
   xp: 0,
   maxXp: 1000,
   gold: 50,
@@ -58,7 +68,16 @@ export const INITIAL_STATS = {
   screenTimeBank: 0,
   lastPostureCheck: new Date(0).toISOString(),
   postureStreak: 0,
-  avatarSeed: 'Hero',
+  dailyWater: 0,
+  lastWaterUpdate: new Date(0).toISOString(),
+  avatarSeed: 'Abhi',
+  choreMoney: {
+    vault: 0,
+    goalTitle: 'Legendary Acquisition',
+    goalAmount: 100,
+    chores: INITIAL_CHORES,
+    completionGrid: Array(3).fill(null).map(() => Array(7).fill(false))
+  },
   attributes: {
     strength: 0,
     intelligence: 0,
@@ -79,200 +98,136 @@ export const INITIAL_HABITS: Habit[] = [
   { id: 'h5', title: 'Digital Fast: No Screens 1hr pre-sleep', streak: 0, lastCompleted: null, isFormed: false, category: TaskCategory.MINDFULNESS, totalCompletions: 0 },
 ];
 
-export const INITIAL_ASSESSMENTS: AssessmentMap = {
-  // Term 1
-  'term1_week4': 'Science – Skills Assessment',
-  'term1_week6': 'CAPA Music – Chord Progression / Science – Skills Assessment',
-  'term1_week7': 'Languages – Part A Listening / Maths – Working Mathematically',
-  'term1_week8': 'HSIE Geog – Topic Test / Science – Skills Assessment',
-  'term1_week9': 'English Writing / PDHPE Resiliency / TAS Tech Projects',
-  'term1_week10': 'Languages – Part B Photo Journal / PDHPE – Volleyball',
-  // Term 2
-  'term2_week3': 'Science – Sem 1 Exam / Mathematics – In Class Test',
-  'term2_week4': 'CAPA Vis Arts – Bug Life / HSIE Geog – Research / Maths Test',
-  'term2_week5': 'English – Writing Task / CAPA Music – Pop Melody',
-  'term2_week9': 'TAS Agriculture / Dig Tech / Engineering / Food / Graphics / Metal / Textiles / Timber / Multi',
-  'term2_week10': 'PDHPE – Team Building',
-  // Term 3
-  'term3_week2': 'Languages – Listening Quiz',
-  'term3_week4': 'CAPA Vis Arts – Insects in Art / Languages – School Calendar',
-  'term3_week5': 'English – Topic Test / HSIE History – Research / Science Project',
-  'term3_week7': 'Mathematics – In Class Test',
-  'term3_week8': 'English Visual / Languages Speaking / Maths Test / PDHPE Drug Ed',
-  'term3_week9': 'CAPA Music – Performance / TAS Projects (Full Suite)',
-  'term3_week10': 'CAPA Vis Arts – Pop Art / PDHPE – Frisbee/Vortex',
-  // Term 4
-  'term4_week3': 'CAPA Music – Aural Exam / Mathematics – Yearly Exam',
-  'term4_week4': 'Languages – Reading Task / Mathematics – Yearly Exam',
-  'term4_week5': 'CAPA Vis Arts / English Monologue / HSIE History End / Science Sem 2 Exam',
-  'term4_week6': 'PDHPE – European Handball',
-  'term4_week9': 'TAS Tech Final Assessments (All Sectors)'
-};
+export const INITIAL_ASSESSMENTS: AssessmentMap = {};
 
-const standardTimes = [
-  { start: '08:30', end: '08:40', label: 'Roll Call', type: 'rollcall' },
-  { start: '08:40', end: '09:33', label: 'Period 1', type: 'class' },
-  { start: '09:33', end: '10:26', label: 'Period 2', type: 'class' },
-  { start: '10:26', end: '10:57', label: 'Recess', type: 'break' },
-  { start: '10:57', end: '11:50', label: 'Period 3', type: 'class' },
-  { start: '11:50', end: '12:43', label: 'Period 4', type: 'class' },
-  { start: '12:43', end: '13:14', label: 'Lunch', type: 'break' },
-  { start: '13:14', end: '14:07', label: 'Period 5', type: 'class' },
-  { start: '14:07', end: '15:00', label: 'Period 6', type: 'class' },
-];
-
-const wednesdayTimes = [
-  { start: '09:23', end: '09:33', label: 'Roll Call', type: 'rollcall' },
-  { start: '09:33', end: '10:26', label: 'Period 2', type: 'class' },
-  { start: '10:26', end: '10:57', label: 'Recess', type: 'break' },
-  { start: '10:57', end: '11:50', label: 'Period 3', type: 'class' },
-  { start: '11:50', end: '12:43', label: 'Period 4', type: 'class' },
-  { start: '12:43', end: '13:14', label: 'Lunch', type: 'break' },
-  { start: '13:14', end: '14:07', label: 'Period 5', type: 'class' },
-  { start: '14:07', end: '15:00', label: 'Period 6', type: 'class' },
-];
-
-const buildDay = (data: Array<{subject: string, room?: string, teacher?: string}>, isWed = false): TimetableSlot[] => {
-  const times = isWed ? wednesdayTimes : standardTimes;
-  return times.map((t, i) => ({
-    id: Math.random().toString(36).substr(2, 9),
-    startTime: t.start,
-    endTime: t.end,
-    label: t.label,
-    type: t.type as any,
-    subject: data[i]?.subject || t.label,
-    classroom: data[i]?.room || '',
-    teacher: data[i]?.teacher || ''
-  }));
-};
-
-export const INITIAL_TIMETABLE: Record<string, Record<string, TimetableSlot[]>> = {
-  'Week A': {
-    'Monday': buildDay([
-      { subject: 'Roll Call', room: 'D.G.09', teacher: 'Mr Christopher Ewen' },
-      { subject: 'History & Geography', room: 'D.G.10', teacher: 'Ms Rachel Muss' },
-      { subject: 'PDHPE', room: 'PRAC.6', teacher: 'Mr Ed Pearce' },
-      { subject: 'Recess' },
-      { subject: 'Languages', room: 'E.27', teacher: 'Ms Sabrina Hoang' },
-      { subject: 'English', room: 'D.1.36', teacher: 'Miss Anne Carroll' },
-      { subject: 'Lunch' },
-      { subject: 'Food Technology', room: 'T.05', teacher: 'Miss Ayna Shah' },
-      { subject: 'Visual Arts', room: 'A.G.46', teacher: 'Mrs Kim Clemson' },
-    ]),
-    'Tuesday': buildDay([
-      { subject: 'Roll Call', room: 'MUSTER.3', teacher: 'Mr Christopher Ewen' },
-      { subject: 'Maths', room: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
-      { subject: 'History & Geography', room: 'D.G.10', teacher: 'Ms Rachel Muss' },
-      { subject: 'Recess' },
-      { subject: 'Languages', room: 'E.27', teacher: 'Ms Sabrina Hoang' },
-      { subject: 'Science', room: 'F.12', teacher: 'Mr Bala Mathy' },
-      { subject: 'Lunch' },
-      { subject: 'English', room: 'D.1.36', teacher: 'Miss Anne Carroll' },
-      { subject: 'Music', room: 'D.1.08', teacher: 'DUGN' },
-    ]),
-    'Wednesday': buildDay([
-      { subject: 'Roll Call', room: 'D.G.09', teacher: 'Mr Christopher Ewen' },
-      { subject: 'PDHPE', room: 'D.G.01', teacher: 'Mr Ed Pearce' },
-      { subject: 'Recess' },
-      { subject: 'Empty' },
-      { subject: 'Empty' },
-      { subject: 'Lunch' },
-      { subject: 'History & Geography', room: 'D.G.10', teacher: 'Ms Shamma Faruque' },
-      { subject: 'Science', room: 'F.11', teacher: 'Mr Bala Mathy' },
-    ], true),
-    'Thursday': buildDay([
-      { subject: 'Roll Call', room: 'D.G.09', teacher: 'Mr Christopher Ewen' },
-      { subject: 'PDHPE', room: 'D.G.01', teacher: 'Mr Ed Pearce' },
-      { subject: 'Visual Arts', room: 'A.G.46', teacher: 'Mr Gary Poulton' },
-      { subject: 'Recess' },
-      { subject: 'Food Technology', room: 'T.05', teacher: 'Miss Ayna Shah' },
-      { subject: 'English', room: 'D.1.36', teacher: 'Miss Anne Carroll' },
-      { subject: 'Lunch' },
-      { subject: 'Maths', room: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
-      { subject: 'Languages', room: 'E.27', teacher: 'Ms Sabrina Hoang' },
-    ]),
-    'Friday': buildDay([
-      { subject: 'Roll Call', room: 'D.G.09', teacher: 'Mr Christopher Ewen' },
-      { subject: 'English', room: 'D.1.32', teacher: 'ENG1' },
-      { subject: 'Music', room: 'D.1.08', teacher: 'DUGN' },
-      { subject: 'Recess' },
-      { subject: 'Science', room: 'F.11', teacher: 'Mr Bala Mathy' },
-      { subject: 'Science', room: 'F.11', teacher: 'Mr Bala Mathy' },
-      { subject: 'Lunch' },
-      { subject: 'Food Technology', room: 'T.05', teacher: 'Miss Ayna Shah' },
-      { subject: 'Maths', room: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
-    ]),
-  },
-  'Week B': {
-    'Monday': buildDay([
-      { subject: 'Roll Call', room: 'D.G.09', teacher: 'Mr Christopher Ewen' },
-      { subject: 'English', room: 'D.1.36', teacher: 'Miss Anne Carroll' },
-      { subject: 'Science', room: 'A.1.16', teacher: 'Mr Bala Mathy' },
-      { subject: 'Recess' },
-      { subject: 'Food Technology', room: 'T.05', teacher: 'Miss Ayna Shah' },
-      { subject: 'Languages', room: 'E.27', teacher: 'Ms Sabrina Hoang' },
-      { subject: 'Lunch' },
-      { subject: 'Music', room: 'D.1.08', teacher: 'DUGN' },
-      { subject: 'PDHPE', room: 'PRAC.6', teacher: 'Mr Ed Pearce' },
-    ]),
-    'Tuesday': buildDay([
-      { subject: 'Roll Call', room: 'MUSTER.3', teacher: 'Mr Christopher Ewen' },
-      { subject: 'Languages', room: 'E.30', teacher: 'Ms Sabrina Hoang' },
-      { subject: 'Visual Arts', room: 'A.G.46', teacher: 'Mrs Kim Clemson' },
-      { subject: 'Recess' },
-      { subject: 'Science', room: 'F.11', teacher: 'Mr Bala Mathy' },
-      { subject: 'English', room: 'D.1.36', teacher: 'Miss Anne Carroll' },
-      { subject: 'Lunch' },
-      { subject: 'History & Geography', room: 'D.G.18', teacher: 'Ms Rachel Muss' },
-      { subject: 'Maths', room: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
-    ]),
-    'Wednesday': buildDay([
-      { subject: 'Roll Call', room: 'D.G.09', teacher: 'Mr Christopher Ewen' },
-      { subject: 'English', room: 'D.1.36', teacher: 'Miss Anne Carroll' },
-      { subject: 'Recess' },
-      { subject: 'Empty' },
-      { subject: 'Empty' },
-      { subject: 'Lunch' },
-      { subject: 'History & Geography', room: 'D.G.10', teacher: 'Ms Shamma Faruque' },
-      { subject: 'Science', room: 'F.11', teacher: 'Mr Bala Mathy' },
-    ], true),
-    'Thursday': buildDay([
-      { subject: 'Roll Call', room: 'D.G.09', teacher: 'Mr Christopher Ewen' },
-      { subject: 'Maths', room: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
-      { subject: 'Maths', room: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
-      { subject: 'Recess' },
-      { subject: 'Food Technology', room: 'T.05', teacher: 'Miss Jordana Grow' },
-      { subject: 'Food Technology', room: 'T.05', teacher: 'Miss Jordana Grow' },
-      { subject: 'Lunch' },
-      { subject: 'Languages', room: 'E.27', teacher: 'Ms Sabrina Hoang' },
-      { subject: 'Home Group', room: 'D.G.12', teacher: 'Mrs Lisa Perry' },
-    ]),
-    'Friday': buildDay([
-      { subject: 'Roll Call', room: 'D.G.09', teacher: 'Mr Christopher Ewen' },
-      { subject: 'PDHPE', room: 'PRAC.6', teacher: 'Mr Ed Pearce' },
-      { subject: 'Maths', room: 'D.G.36', teacher: 'Mrs Himanshu Sharma' },
-      { subject: 'Recess' },
-      { subject: 'Music', room: 'D.1.08', teacher: 'DUGN' },
-      { subject: 'English', room: 'D.1.36', teacher: 'Miss Anne Carroll' },
-      { subject: 'Lunch' },
-      { subject: 'Science', room: 'F.06', teacher: 'Mr Bala Mathy' },
-      { subject: 'History & Geography', room: 'D.G.10', teacher: 'Ms Shamma Faruque' },
-    ]),
-  }
+export const REWARD_ICONS: Record<string, React.ReactNode> = {
+  SCREEN_TIME: <Monitor className="w-8 h-8" />,
+  FUN: <Gamepad2 className="w-8 h-8" />,
+  FOOD: <IceCream className="w-8 h-8" />,
+  OTHER: <Gift className="w-8 h-8" />,
+  LEGENDARY: <Trophy className="w-8 h-8" />,
+  EPIC_QUEST: <Rocket className="w-8 h-8" />,
 };
 
 export const DEFAULT_REWARDS: Reward[] = [
-  { id: 'r1', title: '30 Min Gaming', cost: 100, type: 'SCREEN_TIME', duration: 30 },
-  { id: 'r2', title: '1 Hour YouTube', cost: 180, type: 'SCREEN_TIME', duration: 60 },
-  { id: 'r3', title: 'No Chores Pass', cost: 800, type: 'FUN' },
-  { id: 'r4', title: 'Pizza Night', cost: 1200, type: 'FOOD' },
-  { id: 'r5', title: 'Social Media Unlock (15m)', cost: 50, type: 'SCREEN_TIME', duration: 15 },
-  { id: 'r6', title: 'Lego Set / Hobby Item', cost: 5000, type: 'OTHER' },
+  { id: 'r1', title: '1 Hour Screen Time', cost: 1200, type: 'SCREEN_TIME', duration: 60 },
+  { id: 'r2', title: 'Game Session (30m)', cost: 800, type: 'FUN', duration: 30 },
+  { id: 'r3', title: 'Tactical Treat', cost: 400, type: 'FOOD' },
+  { id: 'r4', title: 'Side Quest: Outing', cost: 5000, type: 'OTHER' },
+  { id: 'r5', title: 'The Weekend Binge', cost: 10000, type: 'LEGENDARY', duration: 480 },
+  { id: 'r6', title: 'Digital Relic Acquisition', cost: 15000, type: 'EPIC_QUEST' },
 ];
 
-export const REWARD_ICONS: Record<string, React.ReactNode> = {
-  SCREEN_TIME: <Clock className="w-6 h-6 text-cyan-400" />,
-  FUN: <Gamepad2 className="w-6 h-6 text-purple-400" />,
-  FOOD: <IceCream className="w-6 h-6 text-pink-400" />,
-  OTHER: <Gift className="w-6 h-6 text-yellow-400" />
+export const INITIAL_TIMETABLE: Record<string, Record<string, TimetableSlot[]>> = {
+  'Week A': {
+    'Monday': [
+      { id: 'wa-mrc', label: 'Roll Call', startTime: '08:30', endTime: '08:40', subject: 'Roll Call Yr8', type: 'rollcall', classroom: 'D.G.09', teacher: 'Mr Christopher Ewen' },
+      { id: 'wa-m1', label: 'Period 1', startTime: '08:40', endTime: '09:33', subject: 'History & Geography Yr8', type: 'class', classroom: 'D.G.10', teacher: 'Ms Rachel Muss' },
+      { id: 'wa-m2', label: 'Period 2', startTime: '09:33', endTime: '10:26', subject: 'PDHPE Yr8', type: 'class', classroom: 'PRAC.6', teacher: 'Mr Ed Pearce' },
+      { id: 'wa-mr', label: 'Recess', startTime: '10:26', endTime: '10:57', subject: 'Recess', type: 'break' },
+      { id: 'wa-m3', label: 'Period 3', startTime: '10:57', endTime: '11:50', subject: 'Languages Yr8', type: 'class', classroom: 'E.27', teacher: 'Ms Sabrina Hoang' },
+      { id: 'wa-m4', label: 'Period 4', startTime: '11:50', endTime: '12:43', subject: 'English Yr8', type: 'class', classroom: 'D.1.36', teacher: 'Miss Anne Carroll' },
+      { id: 'wa-ml', label: 'Lunch', startTime: '12:43', endTime: '13:14', subject: 'Lunch', type: 'break' },
+      { id: 'wa-m5', label: 'Period 5', startTime: '13:14', endTime: '14:07', subject: 'Food Technology Yr8', type: 'class', classroom: 'T.05', teacher: 'Miss Ayna Shah' },
+      { id: 'wa-m6', label: 'Period 6', startTime: '14:07', endTime: '15:00', subject: 'Visual Arts Yr8', type: 'class', classroom: 'A.G.46', teacher: 'Mrs Kim Clemson' },
+    ],
+    'Tuesday': [
+      { id: 'wa-trc', label: 'Roll Call', startTime: '08:30', endTime: '08:40', subject: 'Roll Call Yr8', type: 'rollcall', classroom: 'MUSTER.3', teacher: 'Mr Christopher Ewen' },
+      { id: 'wa-t1', label: 'Period 1', startTime: '08:40', endTime: '09:33', subject: 'Maths Yr8', type: 'class', classroom: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
+      { id: 'wa-t2', label: 'Period 2', startTime: '09:33', endTime: '10:26', subject: 'History & Geography Yr8', type: 'class', classroom: 'D.G.10', teacher: 'Ms Rachel Muss' },
+      { id: 'wa-tr', label: 'Recess', startTime: '10:26', endTime: '10:57', subject: 'Recess', type: 'break' },
+      { id: 'wa-t3', label: 'Period 3', startTime: '10:57', endTime: '11:50', subject: 'Languages Yr8', type: 'class', classroom: 'E.27', teacher: 'Ms Sabrina Hoang' },
+      { id: 'wa-t4', label: 'Period 4', startTime: '11:50', endTime: '12:43', subject: 'Science Yr8', type: 'class', classroom: 'F.12', teacher: 'Mr Bala Mathy' },
+      { id: 'wa-tl', label: 'Lunch', startTime: '12:43', endTime: '13:14', subject: 'Lunch', type: 'break' },
+      { id: 'wa-t5', label: 'Period 5', startTime: '13:14', endTime: '14:07', subject: 'English Yr8', type: 'class', classroom: 'D.1.36', teacher: 'Miss Anne Carroll' },
+      { id: 'wa-t6', label: 'Period 6', startTime: '14:07', endTime: '15:00', subject: 'Music Yr8', type: 'class', classroom: 'D.1.08', teacher: 'DUGN' },
+    ],
+    'Wednesday': [
+      { id: 'wa-wmtg', label: 'MTG', startTime: '08:15', endTime: '09:15', subject: 'MTG', type: 'class' },
+      { id: 'wa-wrc', label: 'Roll Call', startTime: '09:23', endTime: '09:33', subject: 'Roll Call Yr8', type: 'rollcall', classroom: 'D.G.09', teacher: 'Mr Christopher Ewen' },
+      { id: 'wa-w2', label: 'Period 2', startTime: '09:33', endTime: '10:26', subject: 'PDHPE Yr8', type: 'class', classroom: 'D.G.01', teacher: 'Mr Ed Pearce' },
+      { id: 'wa-wr', label: 'Recess', startTime: '10:26', endTime: '10:57', subject: 'Recess', type: 'break' },
+      { id: 'wa-w3', label: 'Period 3', startTime: '10:57', endTime: '11:50', subject: 'Food Technology Yr8', type: 'class', classroom: 'T.05', teacher: 'Miss Ayna Shah' },
+      { id: 'wa-w4', label: 'Period 4', startTime: '11:50', endTime: '12:43', subject: 'English Yr8', type: 'class', classroom: 'D.1.36', teacher: 'Miss Anne Carroll' },
+      { id: 'wa-wl', label: 'Lunch', startTime: '12:43', endTime: '13:14', subject: 'Lunch', type: 'break' },
+      { id: 'wa-w5', label: 'Period 5', startTime: '13:14', endTime: '14:07', subject: 'History & Geography Yr8', type: 'class', classroom: 'D.G.10', teacher: 'Ms Shamma Faruque' },
+      { id: 'wa-w6', label: 'Period 6', startTime: '14:07', endTime: '15:00', subject: 'Science Yr8', type: 'class', classroom: 'F.11', teacher: 'Mr Bala Mathy' },
+    ],
+    'Thursday': [
+      { id: 'wa-thrc', label: 'Roll Call', startTime: '08:30', endTime: '08:40', subject: 'Roll Call Yr8', type: 'rollcall', classroom: 'D.G.09', teacher: 'Mr Christopher Ewen' },
+      { id: 'wa-th1', label: 'Period 1', startTime: '08:40', endTime: '09:33', subject: 'PDHPE Yr8', type: 'class', classroom: 'D.G.01', teacher: 'Mr Ed Pearce' },
+      { id: 'wa-th2', label: 'Period 2', startTime: '09:33', endTime: '10:26', subject: 'Visual Arts Yr8', type: 'class', classroom: 'A.G.46', teacher: 'Mr Gary Poulton' },
+      { id: 'wa-thr', label: 'Recess', startTime: '10:26', endTime: '10:57', subject: 'Recess', type: 'break' },
+      { id: 'wa-th3', label: 'Period 3', startTime: '10:57', endTime: '11:50', subject: 'Food Technology Yr8', type: 'class', classroom: 'T.05', teacher: 'Miss Ayna Shah' },
+      { id: 'wa-th4', label: 'Period 4', startTime: '11:50', endTime: '12:43', subject: 'English Yr8', type: 'class', classroom: 'D.1.36', teacher: 'Miss Anne Carroll' },
+      { id: 'wa-thl', label: 'Lunch', startTime: '12:43', endTime: '13:14', subject: 'Lunch', type: 'break' },
+      { id: 'wa-th5', label: 'Period 5', startTime: '13:14', endTime: '14:07', subject: 'Maths Yr8', type: 'class', classroom: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
+      { id: 'wa-th6', label: 'Period 6', startTime: '14:07', endTime: '15:00', subject: 'Languages Yr8', type: 'class', classroom: 'E.27', teacher: 'Ms Sabrina Hoang' },
+    ],
+    'Friday': [
+      { id: 'wa-frc', label: 'Roll Call', startTime: '08:30', endTime: '08:40', subject: 'Roll Call Yr8', type: 'rollcall', classroom: 'D.G.09', teacher: 'Mr Christopher Ewen' },
+      { id: 'wa-f1', label: 'Period 1', startTime: '08:40', endTime: '09:33', subject: 'English Yr8', type: 'class', classroom: 'D.1.32', teacher: 'ENG1' },
+      { id: 'wa-f2', label: 'Period 2', startTime: '09:33', endTime: '10:26', subject: 'Music Yr8', type: 'class', classroom: 'D.1.08', teacher: 'DUGN' },
+      { id: 'wa-fr', label: 'Recess', startTime: '10:26', endTime: '10:57', subject: 'Recess', type: 'break' },
+      { id: 'wa-f3', label: 'Period 3', startTime: '10:57', endTime: '11:50', subject: 'Science Yr8', type: 'class', classroom: 'F.11', teacher: 'Mr Bala Mathy' },
+      { id: 'wa-f4', label: 'Period 4', startTime: '11:50', endTime: '12:43', subject: 'Science Yr8', type: 'class', classroom: 'F.11', teacher: 'Mr Bala Mathy' },
+      { id: 'wa-fl', label: 'Lunch', startTime: '12:43', endTime: '13:14', subject: 'Lunch', type: 'break' },
+      { id: 'wa-f5', label: 'Period 5', startTime: '13:14', endTime: '14:07', subject: 'Food Technology Yr8', type: 'class', classroom: 'T.05', teacher: 'Miss Ayna Shah' },
+      { id: 'wa-f6', label: 'Period 6', startTime: '14:07', endTime: '15:00', subject: 'Maths Yr8', type: 'class', classroom: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
+    ]
+  },
+  'Week B': {
+    'Monday': [
+      { id: 'wb-mrc', label: 'Roll Call', startTime: '08:30', endTime: '08:40', subject: 'Roll Call Yr8', type: 'rollcall', classroom: 'D.G.09', teacher: 'Mr Christopher Ewen' },
+      { id: 'wb-m1', label: 'Period 1', startTime: '08:40', endTime: '09:33', subject: 'English Yr8', type: 'class', classroom: 'D.1.36', teacher: 'Miss Anne Carroll' },
+      { id: 'wb-m2', label: 'Period 2', startTime: '09:33', endTime: '10:26', subject: 'Science Yr8', type: 'class', classroom: 'A.1.16', teacher: 'Mr Bala Mathy' },
+      { id: 'wb-mr', label: 'Recess', startTime: '10:26', endTime: '10:57', subject: 'Recess', type: 'break' },
+      { id: 'wb-m3', label: 'Period 3', startTime: '10:57', endTime: '11:50', subject: 'Food Technology Yr8', type: 'class', classroom: 'T.05', teacher: 'Miss Ayna Shah' },
+      { id: 'wb-m4', label: 'Period 4', startTime: '11:50', endTime: '12:43', subject: 'Languages Yr8', type: 'class', classroom: 'E.27', teacher: 'Ms Sabrina Hoang' },
+      { id: 'wb-ml', label: 'Lunch', startTime: '12:43', endTime: '13:14', subject: 'Lunch', type: 'break' },
+      { id: 'wb-m5', label: 'Period 5', startTime: '13:14', endTime: '14:07', subject: 'Music Yr8', type: 'class', classroom: 'D.1.08', teacher: 'DUGN' },
+      { id: 'wb-m6', label: 'Period 6', startTime: '14:07', endTime: '15:00', subject: 'PDHPE Yr8', type: 'class', classroom: 'PRAC.6', teacher: 'Mr Ed Pearce' },
+    ],
+    'Tuesday': [
+      { id: 'wb-trc', label: 'Roll Call', startTime: '08:30', endTime: '08:40', subject: 'Roll Call Yr8', type: 'rollcall', classroom: 'MUSTER.3', teacher: 'Mr Christopher Ewen' },
+      { id: 'wb-t1', label: 'Period 1', startTime: '08:40', endTime: '09:33', subject: 'Languages Yr8', type: 'class', classroom: 'E.30', teacher: 'Ms Sabrina Hoang' },
+      { id: 'wb-t2', label: 'Period 2', startTime: '09:33', endTime: '10:26', subject: 'Visual Arts Yr8', type: 'class', classroom: 'A.G.46', teacher: 'Mrs Kim Clemson' },
+      { id: 'wb-tr', label: 'Recess', startTime: '10:26', endTime: '10:57', subject: 'Recess', type: 'break' },
+      { id: 'wb-t3', label: 'Period 3', startTime: '10:57', endTime: '11:50', subject: 'Science Yr8', type: 'class', classroom: 'F.11', teacher: 'Mr Bala Mathy' },
+      { id: 'wb-t4', label: 'Period 4', startTime: '11:50', endTime: '12:43', subject: 'English Yr8', type: 'class', classroom: 'D.1.36', teacher: 'Miss Anne Carroll' },
+      { id: 'wb-tl', label: 'Lunch', startTime: '12:43', endTime: '13:14', subject: 'Lunch', type: 'break' },
+      { id: 'wb-t5', label: 'Period 5', startTime: '13:14', endTime: '14:07', subject: 'History & Geography Yr8', type: 'class', classroom: 'D.G.18', teacher: 'Ms Rachel Muss' },
+      { id: 'wb-t6', label: 'Period 6', startTime: '14:07', endTime: '15:00', subject: 'Maths Yr8', type: 'class', classroom: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
+    ],
+    'Wednesday': [
+      { id: 'wb-wmtg', label: 'MTG', startTime: '08:15', endTime: '09:15', subject: 'MTG', type: 'class' },
+      { id: 'wb-wrc', label: 'Roll Call', startTime: '09:23', endTime: '09:33', subject: 'Roll Call Yr8', type: 'rollcall', classroom: 'D.G.09', teacher: 'Mr Christopher Ewen' },
+      { id: 'wb-w2', label: 'Period 2', startTime: '09:33', endTime: '10:26', subject: 'English Yr8', type: 'class', classroom: 'D.1.36', teacher: 'Miss Anne Carroll' },
+      { id: 'wb-wr', label: 'Recess', startTime: '10:26', endTime: '10:57', subject: 'Recess', type: 'break' },
+      { id: 'wb-w5', label: 'Period 5', startTime: '13:14', endTime: '14:07', subject: 'History & Geography Yr8', type: 'class', classroom: 'D.G.10', teacher: 'Ms Shamma Faruque' },
+      { id: 'wb-w6', label: 'Period 6', startTime: '14:07', endTime: '15:00', subject: 'Science Yr8', type: 'class', classroom: 'F.11', teacher: 'Mr Bala Mathy' },
+    ],
+    'Thursday': [
+      { id: 'wb-thrc', label: 'Roll Call', startTime: '08:30', endTime: '08:40', subject: 'Roll Call Yr8', type: 'rollcall', classroom: 'D.G.09', teacher: 'Mr Christopher Ewen' },
+      { id: 'wb-th1', label: 'Period 1', startTime: '08:40', endTime: '09:33', subject: 'Maths Yr8', type: 'class', classroom: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
+      { id: 'wb-th2', label: 'Period 2', startTime: '09:33', endTime: '10:26', subject: 'Maths Yr8', type: 'class', classroom: 'D.G.30', teacher: 'Mrs Himanshu Sharma' },
+      { id: 'wb-thr', label: 'Recess', startTime: '10:26', endTime: '10:57', subject: 'Recess', type: 'break' },
+      { id: 'wb-th3', label: 'Period 3', startTime: '10:57', endTime: '11:50', subject: 'Food Technology Yr8', type: 'class', classroom: 'T.05', teacher: 'Miss Jordana Grow' },
+      { id: 'wb-th4', label: 'Period 4', startTime: '11:50', endTime: '12:43', subject: 'Food Technology Yr8', type: 'class', classroom: 'T.05', teacher: 'Miss Jordana Grow' },
+      { id: 'wb-thl', label: 'Lunch', startTime: '12:43', endTime: '13:14', subject: 'Lunch', type: 'break' },
+      { id: 'wb-th5', label: 'Period 5', startTime: '13:14', endTime: '14:07', subject: 'Languages Yr8', type: 'class', classroom: 'E.27', teacher: 'Ms Sabrina Hoang' },
+      { id: 'wb-th6', label: 'Period 6', startTime: '14:07', endTime: '15:00', subject: 'Home Group Yr8', type: 'class', classroom: 'D.G.12', teacher: 'Mrs Lisa Perry' },
+    ],
+    'Friday': [
+      { id: 'wb-frc', label: 'Roll Call', startTime: '08:30', endTime: '08:40', subject: 'Roll Call Yr8', type: 'rollcall', classroom: 'D.G.09', teacher: 'Mr Christopher Ewen' },
+      { id: 'wb-f1', label: 'Period 1', startTime: '08:40', endTime: '09:33', subject: 'PDHPE Yr8', type: 'class', classroom: 'PRAC.6', teacher: 'Mr Ed Pearce' },
+      { id: 'wb-f2', label: 'Period 2', startTime: '09:33', endTime: '10:26', subject: 'Maths Yr8', type: 'class', classroom: 'D.G.36', teacher: 'Mrs Himanshu Sharma' },
+      { id: 'wb-fr', label: 'Recess', startTime: '10:26', endTime: '10:57', subject: 'Recess', type: 'break' },
+      { id: 'wb-f3', label: 'Period 3', startTime: '10:57', endTime: '11:50', subject: 'Music Yr8', type: 'class', classroom: 'D.1.08', teacher: 'DUGN' },
+      { id: 'wb-f4', label: 'Period 4', startTime: '11:50', endTime: '12:43', subject: 'English Yr8', type: 'class', classroom: 'D.1.36', teacher: 'Miss Anne Carroll' },
+      { id: 'wb-fl', label: 'Lunch', startTime: '12:43', endTime: '13:14', subject: 'Lunch', type: 'break' },
+      { id: 'wb-f5', label: 'Period 5', startTime: '13:14', endTime: '14:07', subject: 'Science Yr8', type: 'class', classroom: 'F.06', teacher: 'Mr Bala Mathy' },
+      { id: 'wb-f6', label: 'Period 6', startTime: '14:07', endTime: '15:00', subject: 'History & Geography Yr8', type: 'class', classroom: 'D.G.10', teacher: 'Ms Shamma Faruque' },
+    ]
+  }
 };

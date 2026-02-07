@@ -1,0 +1,18 @@
+
+{
+  "short_name": "LifeQuest",
+  "name": "LifeQuest: Level Up Your Life",
+  "icons": [
+    {
+      "src": "https://api.dicebear.com/7.x/pixel-art/svg?seed=Hero&backgroundColor=000000&radius=20",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#020205",
+  "background_color": "#020205",
+  "orientation": "portrait"
+}

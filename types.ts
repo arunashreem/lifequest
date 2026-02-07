@@ -35,10 +35,11 @@ export interface Task {
   xpValue: number;
   goldValue: number;
   dueDate: string; // ISO string
-  isBoss?: boolean; // For Assessments/Exams
-  isSideQuest?: boolean; // For Bonus XP Checklist
+  isBoss?: boolean; // For Raids/Assessments
+  isSideQuest?: boolean; // For Morning Manifest Checklist
   subTasks?: SubTask[];
-  timeSpent?: number; // In minutes for Work tracker
+  timeSpent?: number; // In minutes
+  associatedAttribute?: 'strength' | 'intelligence' | 'wisdom' | 'vitality' | 'charisma';
 }
 
 export interface Milestone {
@@ -47,6 +48,7 @@ export interface Milestone {
   date: string; // ISO string
   category: 'EVENT' | 'ACHIEVEMENT' | 'DEADLINE' | 'HOLIDAY';
   isYearly?: boolean;
+  completed?: boolean;
 }
 
 export interface Book {
@@ -69,6 +71,8 @@ export interface Resource {
   completed: boolean;
   order: number;
   dateAdded: string;
+  dateCompleted?: string;
+  difficulty?: Difficulty;
 }
 
 export interface ContentIdea {
@@ -105,6 +109,7 @@ export interface TimetableSlot {
 export interface UserStats {
   name: string;
   level: number;
+  mastery: number;
   xp: number;
   maxXp: number;
   gold: number;
@@ -112,7 +117,16 @@ export interface UserStats {
   screenTimeBank: number;
   lastPostureCheck: string; // ISO string
   postureStreak: number;
+  dailyWater: number; // In ml
+  lastWaterUpdate: string; // ISO string
   avatarSeed?: string;
+  choreMoney: {
+    vault: number;
+    goalTitle: string;
+    goalAmount: number;
+    chores: { id: string; name: string; value: number }[];
+    completionGrid: boolean[][]; // Dynamic Rows x 7
+  };
   attributes: {
     strength: number;
     intelligence: number;
@@ -136,7 +150,6 @@ export interface GameState {
   milestones: Milestone[];
 }
 
-// Added Reward and AssessmentMap to fix import errors in several components
 export interface Reward {
   id: string;
   title: string;

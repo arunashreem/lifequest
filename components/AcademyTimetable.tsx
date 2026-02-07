@@ -1,23 +1,12 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { TimetableSlot } from '../types';
-import { 
-  Layers, 
-  UserCheck, 
-  UserX, 
-  MapPin, 
-  Sword, 
-  Sparkles, 
-  CheckCircle2, 
-  RefreshCw, 
-  ShieldAlert,
-  CalendarDays,
-  User,
-  Edit2
-} from 'lucide-react';
+import { Task, TaskCategory, TimetableSlot } from '../types';
+import { CATEGORY_ICONS } from '../constants';
+import { Layers, UserCheck, UserX, MapPin, Sword, Sparkles, CheckCircle2, RefreshCw, ShieldAlert, CalendarDays, User, Edit2, Activity, Target, BookOpen, GraduationCap } from 'lucide-react';
 
 interface AcademyTimetableProps {
   timetable: Record<string, Record<string, TimetableSlot[]>>;
+  tasks: Task[];
   onUpdateSlotField: (week: string, day: string, id: string, field: keyof TimetableSlot, value: string) => void;
   onToggleAttendance: (week: string, day: string, id: string) => void;
 }
@@ -25,17 +14,11 @@ interface AcademyTimetableProps {
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const WEEKS = ['Week A', 'Week B'];
 
-const cleanSubject = (subject: string) => {
-  return subject.replace(/\s*[Yy][Rr]8\s*$/, '').trim();
-};
+const cleanSubject = (subject: string) => subject.replace(/\s*[Yy][Rr]8\s*$/, '').trim();
 
 const getSubjectColorClasses = (subject: string, status?: string, isActive?: boolean): string => {
   const s = subject.toLowerCase();
-  // Base classes - using a slightly more opaque background for active slots as requested ("darker")
-  let base = isActive 
-    ? 'bg-slate-950 border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/20' 
-    : 'bg-slate-900/40 border-white/[0.05]';
-
+  let base = isActive ? 'bg-slate-950 border-teal-500/50 shadow-[0_0_30px_rgba(45,212,191,0.15)] ring-1 ring-teal-500/20' : 'bg-slate-900/40 border-white/[0.05]';
   if (s.includes('english')) base += ' border-l-yellow-500';
   else if (s.includes('maths')) base += ' border-l-red-500';
   else if (s.includes('science')) base += ' border-l-teal-500';
@@ -44,17 +27,14 @@ const getSubjectColorClasses = (subject: string, status?: string, isActive?: boo
   else if (s.includes('food')) base += ' border-l-purple-500';
   else if (s.includes('languages')) base += ' border-l-blue-500';
   else if (s.includes('visual arts') || s.includes('music')) base += ' border-l-pink-500';
-  else if (s.includes('roll call') || s.includes('mtg')) base += ' border-l-slate-400';
-  else if (s.includes('walk home')) base += ' border-l-cyan-500';
   else base += ' border-l-slate-700';
 
   if (status === 'attended') return `${base} ring-1 ring-emerald-500/20`;
   if (status === 'missed') return `${base} opacity-40 grayscale`;
-  
   return base;
 };
 
-const AcademyTimetable: React.FC<AcademyTimetableProps> = ({ timetable, onUpdateSlotField, onToggleAttendance }) => {
+const AcademyTimetable: React.FC<AcademyTimetableProps> = ({ timetable, tasks, onUpdateSlotField, onToggleAttendance }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   
   const currentWeekType = useMemo(() => {
@@ -65,16 +45,9 @@ const AcademyTimetable: React.FC<AcademyTimetableProps> = ({ timetable, onUpdate
     return weekNo % 2 === 0 ? 'Week B' : 'Week A';
   }, [currentTime]);
 
-  const currentDayName = useMemo(() => {
-    return currentTime.toLocaleDateString('en-US', { weekday: 'long' });
-  }, [currentTime]);
-
+  const currentDayName = useMemo(() => currentTime.toLocaleDateString('en-US', { weekday: 'long' }), [currentTime]);
   const [selectedWeek, setSelectedWeek] = useState<string>(currentWeekType);
-  const [selectedDay, setSelectedDay] = useState<string>(() => {
-    return DAYS.includes(currentDayName) ? currentDayName : 'Monday';
-  });
-
-  const [editingField, setEditingField] = useState<{id: string, field: string} | null>(null);
+  const [selectedDay, setSelectedDay] = useState<string>(DAYS.includes(currentDayName) ? currentDayName : 'Monday');
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -82,259 +55,135 @@ const AcademyTimetable: React.FC<AcademyTimetableProps> = ({ timetable, onUpdate
   }, []);
 
   const isCurrentSlot = (startTime: string, endTime: string, slotDay: string, slotWeek: string) => {
-    if (selectedWeek !== slotWeek) return false;
-    if (currentDayName !== slotDay) return false;
+    if (selectedWeek !== slotWeek || currentDayName !== slotDay) return false;
     const nowTotal = currentTime.getHours() * 60 + currentTime.getMinutes();
     const [startH, startM] = startTime.split(':').map(Number);
     const [endH, endM] = endTime.split(':').map(Number);
     return nowTotal >= (startH * 60 + startM) && nowTotal < (endH * 60 + endM);
   };
 
-  const handleAttendanceToggle = (day: string, slotId: string) => {
-    onToggleAttendance(selectedWeek, day, slotId);
-  };
-
   const slots = timetable[selectedWeek]?.[selectedDay] || [];
-  const isToday = currentDayName === selectedDay;
+
+  const academicQuests = useMemo(() => {
+    return tasks.filter(t => !t.completed && (t.category === TaskCategory.SCHOOL || t.category === TaskCategory.STUDY || t.category === TaskCategory.HOMEWORK));
+  }, [tasks]);
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700 max-w-full overflow-hidden">
-      <style>{`
-        @keyframes stamp-pop {
-          0% { transform: scale(3); opacity: 0; filter: blur(5px); }
-          50% { transform: scale(1.1); opacity: 0.8; filter: blur(0px); }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-stamp { animation: stamp-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-
-      {/* Header Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 px-2">
-        <div className="flex items-center gap-5">
-          <div className="p-4 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-2xl shadow-2xl border border-white/10 shrink-0">
-             <Layers className="text-white" size={28} />
-          </div>
-          <div>
-            <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic leading-none">Academy Campaign</h2>
-            <p className="flex items-center gap-1.5 text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-2">
-              <Sparkles size={12} className="text-yellow-500 animate-pulse" />
-              Strategic Timetable View
-            </p>
-          </div>
+    <div className="space-y-16 animate-in fade-in duration-1000 pb-20">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+        <div>
+          <h2 className="text-5xl md:text-7xl font-black text-white uppercase tracking-tighter italic glow-text-teal">Academy Campaign</h2>
+          <p className="text-slate-500 text-[12px] font-black uppercase tracking-[0.6em] mt-6 flex items-center gap-4">
+            <Activity className="text-teal-500 animate-pulse" /> 
+            Executing Daily Institutional Training Sequences
+          </p>
         </div>
-
-        <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
-          <button 
-            onClick={() => {
-              const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-              if (DAYS.includes(today)) setSelectedDay(today);
-              setSelectedWeek(currentWeekType);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-slate-800 transition-all shrink-0"
-          >
-            <RefreshCw size={14} className="text-blue-500" />
-            Sync to Today
-          </button>
-          
-          <div className="flex p-1 bg-slate-900 rounded-xl border-2 border-slate-800 shadow-xl shrink-0">
-            {WEEKS.map(week => (
-              <button
-                key={week}
-                onClick={() => setSelectedWeek(week)}
-                className={`px-6 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${
-                  selectedWeek === week
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/30'
-                    : 'text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                {week}
-              </button>
-            ))}
-          </div>
+        <div className="flex p-2 bg-black rounded-[2rem] border-2 border-white/5 shadow-2xl">
+          {WEEKS.map(week => (
+            <button key={week} onClick={() => setSelectedWeek(week)} className={`px-8 py-4 rounded-[1.5rem] font-black text-[12px] uppercase tracking-widest transition-all ${selectedWeek === week ? 'bg-teal-600 text-white shadow-xl' : 'text-slate-500 hover:text-slate-300'}`}>{week}</button>
+          ))}
         </div>
       </div>
 
-      {/* Day Selection Panel */}
-      <div className="px-2">
-        <div className="flex items-center gap-2 p-2 bg-slate-950/50 rounded-[2rem] border border-white/5 shadow-2xl overflow-x-auto no-scrollbar">
-          {DAYS.map((day) => {
-            const isActualToday = currentDayName === day;
-            const isActive = selectedDay === day;
+      <div className="flex items-center gap-4 p-4 bg-slate-950/50 rounded-[3rem] border border-white/5 shadow-3xl overflow-x-auto no-scrollbar">
+        {DAYS.map((day) => (
+          <button key={day} onClick={() => setSelectedDay(day)} className={`flex-1 min-w-[140px] py-6 rounded-[2.5rem] font-black text-xs uppercase tracking-[0.3em] transition-all duration-500 ${selectedDay === day ? 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-2xl scale-105' : 'text-slate-600 hover:text-slate-300 hover:bg-white/5'}`}>{day}</button>
+        ))}
+      </div>
+
+      {/* Main Schedule Panel - Now Full Width */}
+      <div className="space-y-8">
+        <div className="flex items-center gap-4 mb-4 px-4">
+          <CalendarDays size={20} className="text-teal-500" />
+          <h3 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.4em]">Daily Mission Roster</h3>
+        </div>
+        <div className="grid grid-cols-1 gap-8">
+          {slots.map((slot) => {
+            const active = isCurrentSlot(slot.startTime, slot.endTime, selectedDay, selectedWeek);
+            const colors = getSubjectColorClasses(slot.subject || slot.label, slot.status, active);
             return (
-              <button
-                key={day}
-                onClick={() => setSelectedDay(day)}
-                className={`relative flex-1 min-w-[120px] py-4 rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.2em] transition-all duration-300 ${
-                  isActive 
-                    ? 'bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-[0_10px_25px_rgba(225,29,72,0.3)] scale-105 z-10' 
-                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-                }`}
-              >
-                <div className="flex items-center justify-center gap-2">
-                  {day}
-                  {isActualToday && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  )}
+              <div key={slot.id} className={`rpg-card rounded-[3.5rem] p-8 md:p-12 border-l-[12px] transition-all duration-500 relative group overflow-visible ${colors}`}>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 md:gap-10">
+                  <div className="flex-1 min-w-0">
+                    <div className="bg-black/60 px-6 py-2 rounded-full text-[11px] font-black text-slate-500 w-fit mb-6 border border-white/5 tracking-[0.3em]">{slot.startTime} - {slot.endTime}</div>
+                    <h4 className={`text-2xl md:text-4xl font-black uppercase tracking-tight break-words leading-tight transition-colors ${slot.status === 'missed' ? 'line-through opacity-40' : 'text-white glow-text-teal'}`}>{cleanSubject(slot.subject || slot.label)}</h4>
+                    {slot.type !== 'break' && (
+                      <div className="flex flex-wrap items-start gap-x-12 gap-y-6 mt-8">
+                        <div className="flex items-start gap-3 text-[11px] font-black text-slate-500 uppercase tracking-widest min-w-0">
+                          <MapPin size={18} className="text-teal-500 shrink-0 mt-0.5" /> 
+                          <div className="flex flex-col">
+                            <span className="opacity-50 text-[9px] mb-1 uppercase tracking-widest">MISSION CHAMBER:</span>
+                            <span className="text-white/80 font-bold">{slot.classroom || '---'}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 text-[11px] font-black text-slate-500 uppercase tracking-widest min-w-0">
+                          <User size={18} className="text-teal-500 shrink-0 mt-0.5" /> 
+                          <div className="flex flex-col">
+                            <span className="opacity-50 text-[9px] mb-1 uppercase tracking-widest">ACADEMY SAGE:</span>
+                            <span className="text-white/80 font-bold">{slot.teacher || '---'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => onToggleAttendance(selectedWeek, selectedDay, slot.id)} className={`shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-[2rem] md:rounded-[2.5rem] border-4 flex items-center justify-center transition-all shadow-3xl active:scale-90 ${slot.status === 'attended' ? 'bg-emerald-600 border-emerald-400 text-white' : slot.status === 'missed' ? 'bg-red-600 border-red-400 text-white' : 'bg-black/40 border-white/10 text-white/20 hover:text-white'}`}>
+                    {slot.status === 'attended' ? <UserCheck size={32} className="md:w-10 md:h-10" /> : slot.status === 'missed' ? <UserX size={32} className="md:w-10 md:h-10" /> : <Sword size={28} className="md:w-8 md:h-8" />}
+                  </button>
                 </div>
-              </button>
+                {active && <div className="absolute -left-3 top-10 bottom-10 w-2 bg-teal-500 rounded-full shadow-[0_0_30px_rgba(45,212,191,1)] animate-pulse" />}
+              </div>
             );
           })}
         </div>
       </div>
 
-      {/* Single Day View Area */}
-      <div className="px-2 animate-in fade-in slide-in-from-right-4 duration-500" key={`${selectedWeek}-${selectedDay}`}>
-        <div className="max-w-3xl mx-auto space-y-4">
-          <div className="flex items-center justify-between mb-4 px-2">
-            <div className="flex items-center gap-3">
-              <CalendarDays className="text-rose-500" size={20} />
-              <h3 className="text-xl font-black text-white uppercase tracking-widest italic">{selectedDay}</h3>
-            </div>
+      {/* Academy Quests - Now at the very bottom, full width grid */}
+      <div className="space-y-8 pt-10 border-t border-white/5">
+        <div className="flex items-center gap-4 px-4">
+          <Target size={24} className="text-teal-400" />
+          <h3 className="text-xl font-black text-teal-500 uppercase tracking-[0.4em]">Tactical Objectives</h3>
+        </div>
+        
+        <div className="rpg-card rounded-[4rem] p-10 md:p-14 border-teal-500/20 bg-slate-950 shadow-3xl relative overflow-hidden flex flex-col gap-10">
+          <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+            <GraduationCap size={200} className="text-teal-500" />
           </div>
 
-          <div className="space-y-4 min-h-[400px]">
-            {slots.length > 0 ? slots.map((slot) => {
-              const active = isCurrentSlot(slot.startTime, slot.endTime, selectedDay, selectedWeek);
-              const colors = getSubjectColorClasses(slot.subject || slot.label, slot.status, active);
-              const subjectName = slot.subject || slot.label;
-              const isBreak = slot.type === 'break';
-
-              return (
-                <div 
-                  key={slot.id}
-                  className={`rpg-card rounded-2xl p-6 md:p-8 border-l-[6px] transition-all duration-300 relative group overflow-visible ${colors}`}
-                >
-                  <div className="flex items-center justify-between gap-6">
-                    <div className="flex-1 min-w-0">
-                      {/* Time Pill */}
-                      <div className="bg-black/40 px-3 py-1 rounded-full text-[10px] font-black text-slate-500 w-fit mb-4 border border-white/5 tracking-widest">
-                        {slot.startTime} - {slot.endTime}
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {academicQuests.length > 0 ? (
+              academicQuests.map((quest) => (
+                <div key={quest.id} className="p-8 rounded-[2.5rem] bg-black/40 border-2 border-white/5 hover:border-teal-500/40 transition-all group/quest shadow-xl flex flex-col justify-between">
+                   <div className="flex items-start gap-6">
+                      <div className="p-4 bg-teal-500/10 rounded-2xl border border-teal-500/20 text-teal-400 group-hover/quest:scale-110 transition-transform shadow-lg shrink-0">
+                         {CATEGORY_ICONS[quest.category] || <BookOpen size={24} />}
                       </div>
-                      
-                      {/* Subject Name - Large and Bold */}
-                      {editingField?.id === slot.id && editingField?.field === 'subject' ? (
-                        <input
-                          autoFocus
-                          className="w-full bg-slate-950 border border-blue-500 rounded-lg px-3 py-1 text-white text-3xl font-black uppercase outline-none"
-                          value={slot.subject}
-                          onBlur={() => setEditingField(null)}
-                          onChange={(e) => onUpdateSlotField(selectedWeek, selectedDay, slot.id, 'subject', e.target.value)}
-                        />
-                      ) : (
-                        <h4 
-                          onClick={() => setEditingField({id: slot.id, field: 'subject'})}
-                          className={`text-3xl md:text-4xl font-extrabold uppercase tracking-tight truncate leading-none cursor-pointer hover:text-blue-400 transition-colors flex items-center gap-3 ${slot.status === 'missed' ? 'line-through opacity-40' : 'text-white text-glow'}`}
-                        >
-                          {cleanSubject(subjectName)}
-                          <Edit2 size={16} className="opacity-0 group-hover:opacity-40" />
-                        </h4>
-                      )}
-
-                      {/* Metadata Row */}
-                      {!isBreak && (
-                        <div className="flex flex-wrap items-center gap-x-8 gap-y-3 mt-6">
-                          <div 
-                            onClick={() => setEditingField({id: slot.id, field: 'classroom'})}
-                            className="flex items-center gap-3 cursor-pointer group/meta"
-                          >
-                            <MapPin size={16} className="text-red-500" />
-                            {editingField?.id === slot.id && editingField?.field === 'classroom' ? (
-                              <input 
-                                autoFocus
-                                className="bg-slate-950 border border-blue-500 rounded px-1 text-white uppercase outline-none text-[10px]"
-                                value={slot.classroom}
-                                onBlur={() => setEditingField(null)}
-                                onChange={(e) => onUpdateSlotField(selectedWeek, selectedDay, slot.id, 'classroom', e.target.value)}
-                              />
-                            ) : (
-                              <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest group-hover/meta:text-slate-300">
-                                ROOM: {slot.classroom || '---'}
-                              </span>
-                            )}
-                          </div>
-
-                          <div 
-                            onClick={() => setEditingField({id: slot.id, field: 'teacher'})}
-                            className="flex items-center gap-3 cursor-pointer group/meta"
-                          >
-                            <User size={16} className="text-blue-500" />
-                            {editingField?.id === slot.id && editingField?.field === 'teacher' ? (
-                              <input 
-                                autoFocus
-                                className="bg-slate-950 border border-blue-500 rounded px-1 text-white uppercase outline-none text-[10px]"
-                                value={slot.teacher}
-                                onBlur={() => setEditingField(null)}
-                                onChange={(e) => onUpdateSlotField(selectedWeek, selectedDay, slot.id, 'teacher', e.target.value)}
-                              />
-                            ) : (
-                              <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest group-hover/meta:text-slate-300">
-                                TEACHER: {slot.teacher || '---'}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {slot.type !== 'break' && (
-                      <button 
-                        onClick={() => handleAttendanceToggle(selectedDay, slot.id)}
-                        className={`shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-2xl border-2 flex items-center justify-center transition-all shadow-2xl active:scale-90 ${
-                          slot.status === 'attended' ? 'bg-emerald-600 border-emerald-400 text-white shadow-emerald-900/40' : 
-                          slot.status === 'missed' ? 'bg-red-600 border-red-400 text-white shadow-red-900/40' :
-                          'bg-black/40 border-white/10 text-white/20 hover:border-white/40 hover:text-white'
-                        }`}
-                      >
-                         {slot.status === 'attended' ? <UserCheck size={28} /> : slot.status === 'missed' ? <UserX size={28} /> : <Sword size={24} className="opacity-40 group-hover:opacity-100 transition-opacity" />}
-                      </button>
-                    )}
-                  </div>
-
-                  {slot.status === 'attended' && (
-                    <div className="absolute -right-3 -top-3 animate-stamp z-20">
-                      <div className="p-2 bg-emerald-500 rounded-full border-4 border-slate-950 shadow-2xl">
-                        <CheckCircle2 size={18} className="text-white" />
+                      <div className="min-w-0 flex-1">
+                         <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight group-hover/quest:text-teal-400 transition-colors break-words">{quest.title}</h4>
+                         <div className="flex items-center gap-3 mt-4">
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-3 py-1 bg-white/5 rounded-full">{quest.difficulty}</span>
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-800" />
+                            <span className="text-[10px] font-black text-teal-500 uppercase tracking-widest">+{quest.xpValue} XP</span>
+                         </div>
                       </div>
-                    </div>
-                  )}
-
-                  {active && (
-                    <div className="absolute -left-1.5 top-0 bottom-0 w-1 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-pulse" />
-                  )}
+                   </div>
                 </div>
-              );
-            }) : (
-              <div className="py-24 px-4 rounded-[3rem] border-2 border-dashed border-slate-800 flex flex-col items-center justify-center text-center opacity-40">
-                <ShieldAlert size={48} className="text-slate-600 mb-4" />
-                <p className="text-sm font-black text-slate-500 uppercase tracking-widest">No Raids Scribed for this Chronos Node</p>
+              ))
+            ) : (
+              <div className="col-span-full py-24 text-center opacity-30 border-4 border-dashed border-white/5 rounded-[3.5rem]">
+                <CheckCircle2 size={56} className="text-slate-500 mx-auto mb-6" />
+                <p className="text-sm font-black text-slate-600 uppercase tracking-[0.5em]">Academic Sector Cleared</p>
               </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Legend Footer */}
-      <div className="rpg-card p-6 rounded-[2.5rem] border-slate-800 bg-slate-900/40 flex flex-wrap gap-x-6 gap-y-3 items-center justify-center">
-        {[
-          { color: 'bg-yellow-500', label: 'English' },
-          { color: 'bg-red-500', label: 'Maths' },
-          { color: 'bg-teal-500', label: 'Science' },
-          { color: 'bg-blue-500', label: 'Languages' },
-          { color: 'bg-orange-500', label: 'History/Geo' },
-          { color: 'bg-purple-500', label: 'Tech' },
-          { color: 'bg-pink-500', label: 'Arts/Music' },
-          { color: 'bg-lime-500', label: 'PDHPE' }
-        ].map((item, i) => (
-          <div key={i} className="flex items-center gap-3 px-4 py-2 bg-slate-950/40 rounded-xl border border-white/5 hover:border-white/20 transition-colors">
-            <div className={`w-2 h-2 rounded-full ${item.color} shadow-[0_0_8px_rgba(255,255,255,0.2)]`} />
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{item.label}</span>
+          <div className="mt-4 p-8 bg-teal-500/5 border border-teal-500/10 rounded-[2.5rem] relative z-10 text-center max-w-4xl mx-auto">
+             <p className="text-sm md:text-base text-slate-400 font-medium leading-relaxed italic">
+               "Synchronization between institutional cycles and personal mastery is the mark of a True Scholar. Ensure every mission is transcribed and executed with absolute precision."
+             </p>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
 };
-
 export default AcademyTimetable;
